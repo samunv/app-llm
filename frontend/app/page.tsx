@@ -2,8 +2,8 @@ import Image from "next/image";
 
 export default function Home() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-[#FDFBF5] font-sans">
-      <main className="">
+    <div className="flex min-h-screen items-center justify-center bg-[#FAF9F5] font-sans">
+      <main className="flex flex-col items-center !w-full gap-3">
         <div className="flex flex-row-reverse items-center gap-1">
           <h1
             className="text-6xl 
@@ -26,11 +26,11 @@ export default function Home() {
             width={70}
             xmlns="http://www.w3.org/2000/svg"
           >
-            <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+            <g id="SVGRepo_bgCarrier" strokeWidth="0"></g>
             <g
               id="SVGRepo_tracerCarrier"
-              stroke-linecap="round"
-              stroke-linejoin="round"
+              strokeLinecap="round"
+              strokeLinejoin="round"
             ></g>
             <g id="SVGRepo_iconCarrier">
               {" "}
@@ -45,7 +45,21 @@ export default function Home() {
             </g>
           </svg>
         </div>
+        {/** SECCIÓN DE MENSAJES (CHAT) */}
+        <div className=""></div>
+
+        {/** INPUT ESCRIBIR TEXTO */}
+        <div className="bg-[white] text-[black] !p-4 border border-[#d0c19f] rounded-3xl flex flex-row items-center !w-[500px]">
+          <input
+            type="text"
+            name=""
+            id=""
+            placeholder="¿Qúe te apetece preparar hoy?"
+            className=" placeholder:text-[gray] flex-1 outline-none"
+          />
+        </div>
       </main>
-    </div>
-  );
+         
+    </div>
+  );
 }
