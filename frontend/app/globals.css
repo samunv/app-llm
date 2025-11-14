@@ -21,6 +21,10 @@
 
 body {
   background: var(--background);
-  color: var(--foreground);
+  color: #322f2f;
   font-family: Arial, Helvetica, sans-serif;
+}
+
+input:focus .focus-element {
+  border-color: #e67e22;
 }
