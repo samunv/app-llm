@@ -2,17 +2,15 @@
 
 from flask import Flask, jsonify
 from flask_cors import CORS
+from run import app
 
-# 1. Inicializar la aplicación Flask
-app = Flask(__name__)
 
-# 2. Configurar CORS (Cross-Origin Resource Sharing)
-# Esto es ESENCIAL para permitir que tu frontend (Next.js en localhost:3000)
-# pueda hacer peticiones a tu backend (Flask en localhost:5000)
+# 2. Configurar CORS
+# Para permitir peticiones de Next.js en localhost:3000
 CORS(app, resources={r"/api/*": {"origins": "http://localhost:3000"}})
 
 
-# 3. Ruta "Raíz" (para probar en el navegador)
+# 3. Ruta (para probar en el navegador)
 # Esta es una ruta simple para ver si el servidor está vivo.
 @app.route('/')
 def home():
@@ -26,13 +24,3 @@ def api_test():
     # jsonify convierte un diccionario de Python en una respuesta JSON
     # que tu frontend de Next.js podrá entender fácilmente.
     return jsonify(message="¡Conexión con la API de ChefGPT exitosa! 🔥")
-
-
-# 5. Punto de entrada para ejecutar el servidor
-if __name__ == '__main__':
-    # debug=True hace que el servidor se reinicie automáticamente
-    # cada vez que guardas un cambio en el código.
-    # port=5000 es el puerto donde correrá el backend.
-    app.run(debug=True, port=5000)
-
-    
