@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useState, useContext, ReactNode } from "react";
-import { Comida } from "../Comida";
+import { Comida } from "../interfaces/Comida";
 
 // Tipos para el context
 interface ComidaContextType {

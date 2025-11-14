@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Comida } from "../Comida";
+import { Comida } from "../interfaces/Comida";
 import Image from "next/image";
 import SugerenciaComponent from "./components/SugerenciaComponent";
 import { FaPaperPlane } from "react-icons/fa6";
@@ -38,10 +38,12 @@ export default function Inicio() {
   }, []);
 
   useEffect(() => {
-    function establecerComidaSeleccionadaEnBuscador(comidaNombre: string) {
-      setValorBusqueda(comidaNombre);
+    if (comida != null || comida != undefined) {
+      function establecerComidaSeleccionadaEnBuscador(comidaNombre: string) {
+        setValorBusqueda("Prepárame una receta para " + comidaNombre);
+      }
+      establecerComidaSeleccionadaEnBuscador(String(comida?.nombre));
     }
-    establecerComidaSeleccionadaEnBuscador(String(comida?.nombre));
   }, [comida]);
 
   return (
@@ -113,24 +115,22 @@ export default function Inicio() {
                     /* ---------------------------------- */
                     "
       >
-        <input
-          type="text"
-          placeholder="¿qué preparamos hoy?"
-          className="placeholder:text-gray-400 flex-1 outline-none text-lg bg-transparent"
-          value={valorBusqueda}
-          onChange={(e) => setValorBusqueda(e.target.value)}
-          
-        />
-
-        {/* Selector de modelo de IA */}
-
         <select className="rounded-[7px] p-2 !h-max transition-colors duration-200 text-sm ml-2 cursor-pointer bg-[#E6E3D6] text-[#73726C]">
           <option value="">Modelo 1</option>
           <option value="">Modelo 2</option>
         </select>
+        <input
+          type="text"
+          placeholder="¿qué vamos a preparar hoy?"
+          className="placeholder:text-gray-400 flex-1 outline-none text-md bg-transparent"
+          value={valorBusqueda}
+          onChange={(e) => setValorBusqueda(e.target.value)}
+        />
+
+        {/* Selector de modelo de IA */}
 
         {valorBusqueda != "" ? (
-          <button className="scale-up-center flex flex-row items-center gap-1 bg-orange-500 rounded-[7px] p-2 text-white cursor-pointer hover:bg-orange-600">
+          <button className="scale-up-center flex flex-row items-center gap-1 bg-orange-500 rounded-[30px] p-2 px-3 text-white cursor-pointer hover:bg-orange-600">
             <p>Enviar</p>
             <FaPaperPlane size={20} />
           </button>
