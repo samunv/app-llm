@@ -7,6 +7,8 @@ import SugerenciaComponent from "./components/SugerenciaComponent";
 import { FaPaperPlane } from "react-icons/fa6";
 import { useComida } from "../contexts/ComidaContext";
 
+import "./Inicio.css";
+
 export default function Inicio() {
   const [comidas, setComidas] = useState<Comida[]>([]);
   const [modelos, setModelos] = useState<[]>([]);
@@ -130,8 +132,7 @@ export default function Inicio() {
         {/* Selector de modelo de IA */}
 
         {valorBusqueda != "" ? (
-          <button className="scale-up-center flex flex-row items-center gap-1 bg-orange-500 rounded-[30px] p-2 px-3 text-white cursor-pointer hover:bg-orange-600">
-            <p>Enviar</p>
+          <button className="scale-up-center bg-orange-500 rounded-[30px] p-2 px-3 text-white cursor-pointer hover:bg-orange-600">
             <FaPaperPlane size={20} />
           </button>
         ) : (
