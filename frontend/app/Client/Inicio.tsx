@@ -142,7 +142,7 @@ export default function Inicio() {
 
       {/*ZONA DE SUGERENCIAS DE PLATOS PARA COCINAR*/}
       <div className="mt-5">
-        <h2 className="text-center !mb-3">Sugerencias para ti</h2>
+        <h2 className="text-center !mb-3 text-[gray]">Sugerencias para probar</h2>
         <div className="flex flex-row items-center gap-4">
           {comidas.map((comida: Comida, index) => (
             <SugerenciaComponent comidaObtenida={comida} key={index} />
