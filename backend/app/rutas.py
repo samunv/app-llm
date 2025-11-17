@@ -19,7 +19,7 @@ def home():
 
 # 4. Ruta de API de Prueba (para probar la conexión con el frontend)
 # Esta es una ruta de API real que devuelve datos en formato JSON.
-@app.route('/api/test', methods=['GET'])
+@app.route('/api/obtener-receta', methods=['POST'])
 def api_test():
     # jsonify convierte un diccionario de Python en una respuesta JSON
     # que tu frontend de Next.js podrá entender fácilmente.
