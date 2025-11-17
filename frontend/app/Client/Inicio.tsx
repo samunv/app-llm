@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef, JSX } from "react";
+import { useEffect, useState, useRef, JSX, useCallback } from "react";
 import { Comida } from "../interfaces/Comida";
 import Image from "next/image";
 import SugerenciaComponent from "./components/SugerenciaComponent";
@@ -25,50 +25,50 @@ interface Modelo {
 }
 
 const modelosGemini: Modelo[] = [
-    {
-        id: "gemini-2.5-flash",
-        nombre: "Gemini 2.5 Flash", // ✅ CORREGIDO: De 2.0 a 2.5
-        version: "Última Generación", // ✅ AJUSTADO: Refleja su estatus de modelo más nuevo
-        descripcion: "Lo último de Google, perfecto para recetas innovadoras",
-        velocidad: "ultrarrápido",
-        icono: <FaRocket className="text-xl" />,
-        color: "#EA4335",
-        recomendado: true,
-    },
-    {
-        id: "gemini-1.5-flash",
-        nombre: "Gemini 1.5 Flash",
-        version: "Generación Anterior",
-        descripcion: "Rápido y eficiente, ideal para recetas del día a día",
-        velocidad: "ultrarrápido",
-        icono: <FaBolt className="text-xl" />,
-        color: "#FBBC04",
-    },
-    {
-        id: "gemini-1.5-pro",
-        nombre: "Gemini 1.5 Pro",
-        version: "Profesional",
-        descripcion: "El más potente, para recetas complejas y detalladas",
-        velocidad: "potente",
-        icono: <SiGoogle className="text-xl" />,
-        color: "#4285F4",
-    },
-    {
-        id: "gemini-1.0-pro",
-        nombre: "Gemini 1.0 Pro",
-        version: "Estable (Legacy)", 
-        descripcion: "Confiable y preciso para todo tipo de recetas",
-        velocidad: "equilibrado",
-        icono: <FaFlask className="text-xl" />,
-        color: "#34A853",
-    },
+  {
+    id: "gemini-2.5-flash",
+    nombre: "Gemini 2.5 Flash",
+    version: "Última Generación",
+    descripcion: "Lo último de Google, perfecto para recetas innovadoras",
+    velocidad: "ultrarrápido",
+    icono: <FaRocket className="text-xl" />,
+    color: "#EA4335",
+    recomendado: true,
+  },
+  {
+    id: "gemini-1.5-flash",
+    nombre: "Gemini 1.5 Flash",
+    version: "Generación Anterior",
+    descripcion: "Rápido y eficiente, ideal para recetas del día a día",
+    velocidad: "ultrarrápido",
+    icono: <FaBolt className="text-xl" />,
+    color: "#FBBC04",
+  },
+  {
+    id: "gemini-1.5-pro",
+    nombre: "Gemini 1.5 Pro",
+    version: "Profesional",
+    descripcion: "El más potente, para recetas complejas y detalladas",
+    velocidad: "potente",
+    icono: <SiGoogle className="text-xl" />,
+    color: "#4285F4",
+  },
+  {
+    id: "gemini-1.0-pro",
+    nombre: "Gemini 1.0 Pro",
+    version: "Estable (Legacy)",
+    descripcion: "Confiable y preciso para todo tipo de recetas",
+    velocidad: "equilibrado",
+    icono: <FaFlask className="text-xl" />,
+    color: "#34A853",
+  },
 ];
 
 export default function Inicio() {
   const [comidas, setComidas] = useState<Comida[]>([]);
-  
-  const { comida, setComida } = useComida();
-  const { solicitudReceta, setSolicitudReceta } = useSolicitudReceta();
+  // const { comida, setComida } = useComida();
+  const { solicitudReceta, updateSolicitudReceta, setModeloSeleccionadoID } =
+    useSolicitudReceta();
 
   const [isOpen, setIsOpen] = useState(false);
   const [modeloSeleccionado, setModeloSeleccionado] = useState<Modelo>(
@@ -114,29 +114,22 @@ export default function Inicio() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
- // LÍNEAS 207-227 (Bloque modificado)
-useEffect(() => {
-    // Solo necesitamos el modelo seleccionado para ejecutar el efecto
-    if (modeloSeleccionado != undefined) {
-        const modelo: string = modeloSeleccionado.id;
-        
-        setSolicitudReceta((solicitudPrevia: SolicitudReceta | null) => {
-            
-            if (!solicitudPrevia) {
-                return {
-                    comida: "", // Inicializar con una cadena vacía
-                    modeloIASeleccionado: modelo,
-                    especificaciones: undefined,
-                    imagen: undefined,
-                };
-            }
-            return {
-                ...solicitudPrevia,
-                modeloIASeleccionado: modelo,
-            };
-        });
+  const updateSolicitudRecetaCallback = useCallback(
+    (claveActualizar: string, valorActualizar: string) => {
+      updateSolicitudReceta(claveActualizar, valorActualizar);
+    },
+    [updateSolicitudReceta]
+  );
+
+  useEffect(() => {
+    if (modeloSeleccionado) {
+      updateSolicitudRecetaCallback("modeloIASeleccionado", modeloSeleccionado.id);
+      settearModeloSeleccionadoGlobal(modeloSeleccionado.id);
     }
-}, [modeloSeleccionado, setSolicitudReceta]); 
+    function settearModeloSeleccionadoGlobal(modeloSeleccionadoID: string) {
+      setModeloSeleccionadoID(modeloSeleccionadoID);
+    }
+  }, [modeloSeleccionado, updateSolicitudRecetaCallback, setModeloSeleccionadoID]);
 
   const seleccionarModelo = (modelo: Modelo) => {
     setModeloSeleccionado(modelo);
@@ -196,10 +189,10 @@ useEffect(() => {
       {solicitudReceta ? (
         <div>
           {/* ✅ CORRECCIÓN 1: Usar llaves curvas {} para acceder al valor */}
-          <p>**Comida:** {solicitudReceta.comida}</p>
+          <p>Comida: {solicitudReceta.comida}</p>
 
           {/* ✅ CORRECCIÓN 2: Acceder al valor y separarlo del texto */}
-          <p>**Modelo IA:** {solicitudReceta.modeloIASeleccionado}</p>
+          <p>Modelo IA: {solicitudReceta.modeloIASeleccionado}</p>
         </div>
       ) : (
         // Opcional: Podrías mostrar un mensaje si el objeto es nulo.
@@ -242,7 +235,7 @@ useEffect(() => {
           </button>
 
           {isOpen && (
-            <div className="absolute top-full left-0 mt-2 w-[420px] max-h-[520px] overflow-y-auto bg-white rounded-2xl shadow-2xl border-2 border-[#E67E22]/20 z-50 animate-fadeIn">
+            <div className="absolute top-full left-0 mt-2 w-[420px] max-h-[150px] overflow-y-auto bg-white rounded-2xl shadow-2xl border-2 border-[#E67E22]/20 z-50 animate-fadeIn">
               <div className="sticky top-0 bg-gradient-to-r from-[#E67E22] to-[#D35400] px-4 py-3 rounded-t-2xl z-10">
                 <div className="flex items-center justify-between text-white">
                   <div className="flex items-center gap-2">
@@ -322,13 +315,13 @@ useEffect(() => {
                 })}
               </div>
 
-              <div className="sticky bottom-0 bg-gradient-to-t from-gray-50 to-transparent px-4 py-3 rounded-b-2xl border-t border-gray-200/50">
+              {/* <div className="sticky bottom-0 bg-gradient-to-t from-gray-50 to-transparent px-4 py-3 rounded-b-2xl border-t border-gray-200/50">
                 <p className="text-[10px] text-[#343A40]/60 text-center leading-relaxed">
                   <SiGoogle className="inline text-xs mr-1" />
                   Todos los modelos usan la API oficial de{" "}
                   <span className="font-semibold">Google Gemini</span>
                 </p>
-              </div>
+              </div> */}
             </div>
           )}
         </div>
@@ -337,32 +330,18 @@ useEffect(() => {
           type="text"
           placeholder="¿qué vamos a preparar hoy?"
           className="placeholder:text-[#8D6E63]/60 flex-1 outline-none text-base bg-transparent px-2"
-  
           value={solicitudReceta?.comida ?? ""}
           onChange={(e) => {
-            const newComida = e.target.value;
-            const modelo = modeloSeleccionado.id;
-
-            setSolicitudReceta((prev) => {
-              if (!prev) {
-                return {
-                  comida: newComida,
-                  modeloIASeleccionado: modelo,
-                };
-              }
-              return {
-                ...prev,
-                comida: newComida,
-              };
-            });
+            updateSolicitudRecetaCallback("comida", e.target.value);
           }}
         />
 
-        {(solicitudReceta?.comida ?? "").trim().length > 0 && (
-          <button className="bg-gradient-to-r from-[#E67E22] to-[#D35400] hover:from-[#D35400] hover:to-[#C0392B] rounded-full p-2.5 px-4 text-white cursor-pointer transition-all duration-300 shadow-md hover:shadow-lg hover:scale-105 active:scale-95 flex-shrink-0">
-            <FaPaperPlane size={18} />
-          </button>
-        )}
+        {(solicitudReceta?.comida ?? "").trim().length > 0 &&
+          solicitudReceta?.modeloIASeleccionado && (
+            <button className="bg-gradient-to-r from-[#E67E22] to-[#D35400] hover:from-[#D35400] hover:to-[#C0392B] rounded-full p-2.5 px-4 text-white cursor-pointer transition-all duration-300 shadow-md hover:shadow-lg hover:scale-105 active:scale-95 flex-shrink-0">
+              <FaPaperPlane size={18} />
+            </button>
+          )}
       </div>
 
       {/* <div className="mt-5">
