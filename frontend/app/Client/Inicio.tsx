@@ -53,15 +53,6 @@ const modelosGemini: Modelo[] = [
     icono: <SiGoogle className="text-xl" />,
     color: "#4285F4",
   },
-  {
-    id: "gemini-1.0-pro",
-    nombre: "Gemini 1.0 Pro",
-    version: "Estable (Legacy)",
-    descripcion: "Confiable y preciso para todo tipo de recetas",
-    velocidad: "equilibrado",
-    icono: <FaFlask className="text-xl" />,
-    color: "#34A853",
-  },
 ];
 
 export default function Inicio() {
@@ -121,15 +112,12 @@ export default function Inicio() {
     [updateSolicitudReceta]
   );
 
-  useEffect(() => {
-    if (modeloSeleccionado) {
-      updateSolicitudRecetaCallback("modeloIASeleccionado", modeloSeleccionado.id);
-      settearModeloSeleccionadoGlobal(modeloSeleccionado.id);
-    }
-    function settearModeloSeleccionadoGlobal(modeloSeleccionadoID: string) {
-      setModeloSeleccionadoID(modeloSeleccionadoID);
-    }
-  }, [modeloSeleccionado, updateSolicitudRecetaCallback, setModeloSeleccionadoID]);
+useEffect(() => {
+  if (modeloSeleccionado) {
+    updateSolicitudRecetaCallback("modeloIASeleccionado", modeloSeleccionado.id);
+    setModeloSeleccionadoID(modeloSeleccionado.id);
+  }
+}, [modeloSeleccionado, updateSolicitudRecetaCallback, setModeloSeleccionadoID]);
 
   const seleccionarModelo = (modelo: Modelo) => {
     setModeloSeleccionado(modelo);

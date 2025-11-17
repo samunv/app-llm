@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useState, useContext, ReactNode } from "react";
+import { createContext, useState, useContext, ReactNode, useCallback } from "react";
 import { SolicitudReceta } from "./../interfaces/SolicitudReceta";
 
 // Tipos para el context
@@ -33,26 +33,25 @@ export const SolicitudRecetaProvider = ({
 
   const [modeloSeleccionadoID, setModeloSeleccionadoID] = useState<string>("");
 
-  const updateSolicitudReceta = (
-    claveActualizar: string,
-    valorActualizar: string
-  ) => {
-    setSolicitudReceta((solicitudPrevia) => {
-      if (!solicitudPrevia) {
+  const updateSolicitudReceta = useCallback(
+    (claveActualizar: string, valorActualizar: string) => {
+      setSolicitudReceta((solicitudPrevia) => {
+        if (!solicitudPrevia) {
+          return {
+            [claveActualizar]: valorActualizar,
+            modeloIASeleccionado: modeloSeleccionadoID,
+            especificaciones: undefined,
+            imagen: undefined,
+          };
+        }
         return {
+          ...solicitudPrevia,
           [claveActualizar]: valorActualizar,
-          modeloIASeleccionado: modeloSeleccionadoID,
-          especificaciones: undefined,
-          imagen: undefined,
         };
-      }
-      return {
-        ...solicitudPrevia,
-        modeloIASeleccionado: modeloSeleccionadoID,
-        [claveActualizar]: valorActualizar,
-      };
-    });
-  };
+      });
+    },
+    [modeloSeleccionadoID] // Solo se redefine si cambia el ID
+  );
 
   return (
     <SolicitudRecetaContext.Provider
