@@ -10,6 +10,7 @@ import { FaRobot, FaBolt, FaFlask, FaRocket } from "react-icons/fa";
 import { useComida } from "../contexts/ComidaContext";
 
 import "./Inicio.css";
+import { useSolicitudReceta } from "../contexts/SolicitudRecetaContext";
 
 interface Modelo {
   id: string;
@@ -66,6 +67,7 @@ export default function Inicio() {
   const [comidas, setComidas] = useState<Comida[]>([]);
   const [valorBusqueda, setValorBusqueda] = useState<string>("");
   const { comida, setComida } = useComida();
+  const { setSolicitudReceta } = useSolicitudReceta()
   
   const [isOpen, setIsOpen] = useState(false);
   const [modeloSeleccionado, setModeloSeleccionado] = useState<Modelo>(modelosGemini[0]);
