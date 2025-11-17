@@ -1,12 +1,12 @@
 "use client";
 
 import { createContext, useState, useContext, ReactNode } from "react";
-import { SolicitudReceta } from "../interfaces/SolicitudReceta";
+import { SolicitudReceta } from './../interfaces/SolicitudReceta';
 
 // Tipos para el context
 interface SolicitudRecetaContextType {
   solicitudReceta: SolicitudReceta | null;
-  setSolicitudReceta: (solicitudReceta: SolicitudReceta) => void;
+  setSolicitudReceta: React.Dispatch<React.SetStateAction<SolicitudReceta | null>>;
 }
 
 // Contexto con valor inicial vacío
@@ -25,5 +25,8 @@ export const SolicitudRecetaProvider = ({ children }: { children: ReactNode }) =
 // Hook para usar el context fácilmente
 export const useSolicitudReceta = () => {
   const context = useContext(SolicitudRecetaContext);
+    if (context === undefined) {
+        throw new Error('useSolicitudReceta debe usarse dentro de un SolicitudRecetaProvider');
+    }
   return context;
 };
