@@ -240,12 +240,12 @@ export default function Inicio() {
         ¡Hola! soy tu chef de recetas,
       </h1>
 
-      {solicitudReceta ? (
+      {/* {solicitudReceta ? (
         <div>
-          {/* ✅ CORRECCIÓN 1: Usar llaves curvas {} para acceder al valor */}
+         
           <p>Comida: {solicitudReceta.comida}</p>
 
-          {/* ✅ CORRECCIÓN 2: Acceder al valor y separarlo del texto */}
+          
           <p>Modelo IA: {solicitudReceta.modeloIASeleccionado}</p>
 
           <p>Imagen : {solicitudReceta.imagen?.slice(0, 8)}</p>
@@ -260,7 +260,7 @@ export default function Inicio() {
       ) : (
         // Opcional: Podrías mostrar un mensaje si el objeto es nulo.
         <p>No hay solicitud de receta definida.</p>
-      )}
+      )} */}
 
       <div className="bg-[#FDFBF5] text-[#343A40] p-3 border-2 border-[#8D6E63]/30 rounded-2xl flex flex-row items-center w-[700px] gap-3 shadow-lg focus-within:border-[#E67E22] focus-within:ring-2 focus-within:ring-[#E67E22]/30 transition-all duration-300 min-h-[65px]">
         <div className="relative" ref={dropdownRef}>
