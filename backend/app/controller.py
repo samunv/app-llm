@@ -1,5 +1,5 @@
 from flask import Flask, request, jsonify
-from app.modelo import generar_receta_ia
+from app.service import generar_receta_ia
 
 app = Flask(__name__)
 

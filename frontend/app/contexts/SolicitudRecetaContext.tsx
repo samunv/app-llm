@@ -2,6 +2,7 @@
 
 import { createContext, useState, useContext, ReactNode, useCallback } from "react";
 import { SolicitudReceta } from "./../interfaces/SolicitudReceta";
+import { Especificaciones } from "../interfaces/Especificaciones";
 
 // Tipos para el context
 interface SolicitudRecetaContextType {
@@ -11,7 +12,7 @@ interface SolicitudRecetaContextType {
   >;
   updateSolicitudReceta: (
     claveActualizar: string,
-    valorActualizar: string
+    valorActualizar: string | Especificaciones
   ) => void;
   modeloSeleccionadoID: string;
   setModeloSeleccionadoID: (modelo: string) => void;
@@ -34,7 +35,7 @@ export const SolicitudRecetaProvider = ({
   const [modeloSeleccionadoID, setModeloSeleccionadoID] = useState<string>("gemini-2.5-flash");
 
   const updateSolicitudReceta = useCallback(
-    (claveActualizar: string, valorActualizar: string) => {
+    (claveActualizar: string, valorActualizar: string | Especificaciones) => {
       setSolicitudReceta((solicitudPrevia) => {
         if (!solicitudPrevia) {
           return {
