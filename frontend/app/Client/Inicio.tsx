@@ -8,6 +8,7 @@ import { FaPaperPlane, FaChevronDown, FaCheck } from "react-icons/fa6";
 import { SiGoogle } from "react-icons/si";
 import { FaRobot, FaBolt, FaFlask, FaRocket } from "react-icons/fa";
 import { useComida } from "../contexts/ComidaContext";
+import { FaImage } from "react-icons/fa6";
 
 import "./Inicio.css";
 import { useSolicitudReceta } from "../contexts/SolicitudRecetaContext";
@@ -67,6 +68,50 @@ export default function Inicio() {
   );
   const dropdownRef = useRef<HTMLDivElement>(null);
 
+  const inputFileRef = useRef<HTMLInputElement>(null);
+
+  const [imagenPreview, setImagenPreview] = useState<string>();
+
+  const handleClickImagen = () => {
+    inputFileRef.current?.click();
+  };
+
+  const handleFileChange = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const file = event.target.files?.[0];
+    const fileBase64: string = await convertirEnBase64(file);
+    if (file) {
+      updateSolicitudReceta("imagen", fileBase64);
+    }
+
+    const imageUrl = URL.createObjectURL(file as File);
+    setImagenPreview(imageUrl);
+  };
+
+  function convertirEnBase64(file: File | undefined): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+
+      // Cuando el FileReader termine de cargar...
+      reader.onload = () => {
+        // El resultado contiene el prefijo "data:image/jpeg;base64,"
+        const base64Url = String(reader.result);
+        // Extraer solo la parte Base64 (después de la coma)
+        const base64Data = base64Url?.split(",")[1];
+        resolve(base64Data);
+      };
+
+      // Manejo de errores
+      reader.onerror = (error) => {
+        reject(error);
+      };
+
+      // 3. Lee el archivo como una URL de datos
+      reader.readAsDataURL(file as File);
+    });
+  }
+
   useEffect((): void => {
     function settearComidas() {
       setComidas([
@@ -112,12 +157,19 @@ export default function Inicio() {
     [updateSolicitudReceta]
   );
 
-useEffect(() => {
-  if (modeloSeleccionado) {
-    updateSolicitudRecetaCallback("modeloIASeleccionado", modeloSeleccionado.id);
-    setModeloSeleccionadoID(modeloSeleccionado.id);
-  }
-}, [modeloSeleccionado, updateSolicitudRecetaCallback, setModeloSeleccionadoID]);
+  useEffect(() => {
+    if (modeloSeleccionado) {
+      updateSolicitudRecetaCallback(
+        "modeloIASeleccionado",
+        modeloSeleccionado.id
+      );
+      setModeloSeleccionadoID(modeloSeleccionado.id);
+    }
+  }, [
+    modeloSeleccionado,
+    updateSolicitudRecetaCallback,
+    setModeloSeleccionadoID,
+  ]);
 
   const seleccionarModelo = (modelo: Modelo) => {
     setModeloSeleccionado(modelo);
@@ -181,6 +233,8 @@ useEffect(() => {
 
           {/* ✅ CORRECCIÓN 2: Acceder al valor y separarlo del texto */}
           <p>Modelo IA: {solicitudReceta.modeloIASeleccionado}</p>
+
+          <p>Imagen : {solicitudReceta.imagen?.slice(0, 8)}</p>
         </div>
       ) : (
         // Opcional: Podrías mostrar un mensaje si el objeto es nulo.
@@ -314,6 +368,29 @@ useEffect(() => {
           )}
         </div>
 
+        {imagenPreview ? (
+          <img
+            src={imagenPreview}
+            alt=""
+            className="w-[50px] h-[50px] rounded-xl object-cover cursor-pointer"
+            onClick={handleClickImagen}
+          />
+        ) : (
+          <button
+            onClick={handleClickImagen}
+            className="bg-[#e1ded3] rounded-xl flex flex-col items-center justify-center w-[50px] h-[50px] cursor-pointer"
+          >
+            <FaImage size={25} color="gray" />
+          </button>
+        )}
+
+        <input
+          type="file"
+          ref={inputFileRef}
+          hidden
+          accept="image/png, image/jpeg"
+          onChange={handleFileChange} // cuando el usuario selecciona un archivo
+        />
         <input
           type="text"
           placeholder="¿qué vamos a preparar hoy?"
