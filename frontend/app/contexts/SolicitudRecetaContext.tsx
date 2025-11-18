@@ -31,7 +31,7 @@ export const SolicitudRecetaProvider = ({
   const [solicitudReceta, setSolicitudReceta] =
     useState<SolicitudReceta | null>(null);
 
-  const [modeloSeleccionadoID, setModeloSeleccionadoID] = useState<string>("");
+  const [modeloSeleccionadoID, setModeloSeleccionadoID] = useState<string>("gemini-2.5-flash");
 
   const updateSolicitudReceta = useCallback(
     (claveActualizar: string, valorActualizar: string) => {

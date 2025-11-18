@@ -171,20 +171,6 @@ export default function Inicio() {
     [updateSolicitudReceta]
   );
 
-  useEffect(() => {
-    if (modeloSeleccionado) {
-      updateSolicitudRecetaCallback(
-        "modeloIASeleccionado",
-        modeloSeleccionado.id
-      );
-      setModeloSeleccionadoID(modeloSeleccionado.id);
-    }
-  }, [
-    modeloSeleccionado,
-    updateSolicitudRecetaCallback,
-    setModeloSeleccionadoID,
-  ]);
-
   const seleccionarModelo = (modelo: Modelo) => {
     setModeloSeleccionado(modelo);
     setIsOpen(false);
@@ -204,6 +190,15 @@ export default function Inicio() {
         return { color: "text-gray-600", emoji: "⭐", bg: "bg-gray-50" };
     }
   };
+
+  useEffect(() => {
+    if (modeloSeleccionado) {
+      updateSolicitudRecetaCallback(
+        "modeloIASeleccionado",
+        modeloSeleccionado.id
+      );
+    }
+  }, [modeloSeleccionado, updateSolicitudRecetaCallback]);
 
   return (
     <main className="flex flex-col items-center !w-full gap-4">
@@ -239,13 +234,11 @@ export default function Inicio() {
       <h1 className="text-[#343A40] text-3xl text-center font-medium">
         ¡Hola! soy tu chef de recetas,
       </h1>
-
-      {/* {solicitudReceta ? (
+{/* 
+      {solicitudReceta ? (
         <div>
-         
           <p>Comida: {solicitudReceta.comida}</p>
 
-          
           <p>Modelo IA: {solicitudReceta.modeloIASeleccionado}</p>
 
           <p>Imagen : {solicitudReceta.imagen?.slice(0, 8)}</p>
@@ -269,8 +262,8 @@ export default function Inicio() {
             className="flex items-center gap-2.5 px-3 py-2 bg-gradient-to-r from-[#E67E22] to-[#D35400] hover:from-[#D35400] hover:to-[#C0392B] text-white rounded-xl transition-all duration-300 shadow-md hover:shadow-lg border border-[#8D6E63]/10 min-w-[180px] group relative"
           >
             {modeloSeleccionado.recomendado && (
-              <div className="absolute -top-1 -right-1 bg-yellow-400 text-[#343A40] text-[9px] font-bold px-1.5 py-0.5 rounded-full shadow-sm">
-                ⭐ NUEVO
+              <div className="absolute -top-1 -right-1 bg-yellow-400 text-[white] text-[9px] font-bold px-1.5 py-0.5 rounded-full shadow-sm">
+                Recomendado
               </div>
             )}
 
