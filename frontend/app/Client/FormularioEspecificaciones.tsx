@@ -4,6 +4,8 @@ import { FormEvent, useEffect, useState } from "react";
 import { useEspecificaciones } from "../contexts/EspecificacionesContext";
 import { FaLeaf, FaBan, FaBullseye, FaXmark, FaCheck } from "react-icons/fa6";
 import { IoSparkles } from "react-icons/io5";
+import { useSolicitudReceta } from "../contexts/SolicitudRecetaContext";
+import { Especificaciones } from "../interfaces/Especificaciones";
 
 type Props = {
   cerrar: () => void;
@@ -11,6 +13,7 @@ type Props = {
 
 export default function FormularioEspecificaciones({ cerrar }: Props) {
   const { especificaciones, updateEspecificaciones } = useEspecificaciones();
+  const {updateSolicitudReceta} = useSolicitudReceta();
   const [animarSalida, setAnimarSalida] = useState(false);
 
   // Manejar el cierre con animación
@@ -26,6 +29,8 @@ export default function FormularioEspecificaciones({ cerrar }: Props) {
 
   const handleUpdate = (clave: string, valor: string) => {
     updateEspecificaciones(clave, valor);
+    updateSolicitudReceta("especificaciones", especificaciones as Especificaciones)
+  
   };
 
   return (
