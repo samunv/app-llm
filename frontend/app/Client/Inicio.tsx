@@ -13,6 +13,11 @@ import { FaImage } from "react-icons/fa6";
 import "./Inicio.css";
 import { useSolicitudReceta } from "../contexts/SolicitudRecetaContext";
 import { SolicitudReceta } from "./../interfaces/SolicitudReceta";
+import { useEspecificaciones } from "../contexts/EspecificacionesContext";
+import { IoIosAddCircle } from "react-icons/io";
+import { Especificaciones } from "./../interfaces/Especificaciones";
+import FormularioEspecificaciones from "./FormularioEspecificaciones";
+import BotonGeneral from "./components/BotonGeneral";
 
 interface Modelo {
   id: string;
@@ -72,8 +77,17 @@ export default function Inicio() {
 
   const [imagenPreview, setImagenPreview] = useState<string>();
 
+  const { especificaciones, setEspecificaciones } = useEspecificaciones();
+
+  const [mostrarFormEspecificaciones, setMostrarFormEspecificaciones] =
+    useState<boolean>(false);
+
   const handleClickImagen = () => {
     inputFileRef.current?.click();
+  };
+
+  const cerrarFormulario = () => {
+    setMostrarFormEspecificaciones(false);
   };
 
   const handleFileChange = async (
@@ -235,6 +249,13 @@ export default function Inicio() {
           <p>Modelo IA: {solicitudReceta.modeloIASeleccionado}</p>
 
           <p>Imagen : {solicitudReceta.imagen?.slice(0, 8)}</p>
+
+          <p>
+            Especificaciones :{" "}
+            {especificaciones?.restricciones +
+              " " +
+              especificaciones?.tipo_dieta}
+          </p>
         </div>
       ) : (
         // Opcional: Podrías mostrar un mensaje si el objeto es nulo.
@@ -278,7 +299,7 @@ export default function Inicio() {
 
           {isOpen && (
             <div className="absolute top-full left-0 mt-2 w-[420px] max-h-[150px] overflow-y-auto bg-white rounded-2xl shadow-2xl border-2 border-[#E67E22]/20 z-50 animate-fadeIn">
-              <div className="sticky top-0 bg-gradient-to-r from-[#E67E22] to-[#D35400] px-4 py-3 rounded-t-2xl z-10">
+              <div className="sticky top-0 bg-gradient-to-r from-[#E67E22] to-[#D35400] px-4 py-3 z-10">
                 <div className="flex items-center justify-between text-white">
                   <div className="flex items-center gap-2">
                     <FaRobot className="text-lg" />
@@ -368,22 +389,6 @@ export default function Inicio() {
           )}
         </div>
 
-        {imagenPreview ? (
-          <img
-            src={imagenPreview}
-            alt=""
-            className="w-[50px] h-[50px] rounded-xl object-cover cursor-pointer"
-            onClick={handleClickImagen}
-          />
-        ) : (
-          <button
-            onClick={handleClickImagen}
-            className="bg-[#e1ded3] rounded-xl flex flex-col items-center justify-center w-[50px] h-[50px] cursor-pointer"
-          >
-            <FaImage size={25} color="gray" />
-          </button>
-        )}
-
         <input
           type="file"
           ref={inputFileRef}
@@ -400,6 +405,22 @@ export default function Inicio() {
             updateSolicitudRecetaCallback("comida", e.target.value);
           }}
         />
+
+        {imagenPreview ? (
+          <img
+            src={imagenPreview}
+            alt=""
+            className="w-[50px] h-[50px] rounded-xl object-cover cursor-pointer border-2 border-[#DBD0C9]"
+            onClick={handleClickImagen}
+          />
+        ) : (
+          <button
+            onClick={handleClickImagen}
+            className="bg-[#e1ded3] rounded-xl flex flex-col items-center justify-center w-[50px] h-[50px] cursor-pointer"
+          >
+            <FaImage size={25} color="gray" />
+          </button>
+        )}
 
         {(solicitudReceta?.comida ?? "").trim().length > 0 &&
           solicitudReceta?.modeloIASeleccionado && (
@@ -480,6 +501,17 @@ export default function Inicio() {
           background: #d35400;
         }
       `}</style>
+
+      <BotonGeneral
+        texto="Añadir especificaciones"
+        onClick={() => setMostrarFormEspecificaciones(true)}
+      >
+        <IoIosAddCircle size={20} />
+      </BotonGeneral>
+
+      {mostrarFormEspecificaciones && (
+        <FormularioEspecificaciones cerrar={cerrarFormulario} />
+      )}
     </main>
   );
 }

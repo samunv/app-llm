@@ -16,7 +16,7 @@ const EspecificacionesContext =
   createContext<EspecificacionesContextType | undefined>(undefined);
 
 export const EspecificacionesProvider = ({children}:{
-  children: ReactNode; 
+  children: ReactNode;
 })=>{
 
   const [especificaciones, setEspecificaciones] = useState<Especificaciones | null>(null)
@@ -40,7 +40,7 @@ export const EspecificacionesProvider = ({children}:{
 
   return (
     <EspecificacionesContext.Provider value={{especificaciones, setEspecificaciones, updateEspecificaciones}}>
-
+{children}
     </EspecificacionesContext.Provider>
   )
 }

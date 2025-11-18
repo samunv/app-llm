@@ -1,101 +1,93 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { Especificaciones } from '../interfaces/Especificaciones';
+import { useState } from "react";
+import { Especificaciones } from "../interfaces/Especificaciones";
+import { useEspecificaciones } from "../contexts/EspecificacionesContext";
+import { FormEvent } from "react"; // Necesario para manejar el evento del formulario con estado
+import BotonGeneral from "./components/BotonGeneral";
 
-export default function EspecificacionesForm() {
-  const [message, setMessage] = useState('');
-  const [isPending, setIsPending] = useState(false);
+type Props = {
+  cerrar: () => void;
+};
 
-  async function handleSubmit(formData: FormData) {
-    setIsPending(true);
-    setMessage('Procesando solicitud de receta...');
+export default function FormularioEspecificaciones({ cerrar }: Props) {
+  // Obtenemos la función de actualización del contexto
+  const { especificaciones, setEspecificaciones, updateEspecificaciones } =
+    useEspecificaciones();
 
-    // 1. Obtener los datos del formulario
-    const especificaciones: Especificaciones = {
-      tipo_dieta: String(formData.get('tipo_dieta')),
-      restricciones: String(formData.get('restricciones')),
-      ingredientes_evitar: String(formData.get('ingredientes_evitar')),
-      tiempo_maximo: String(formData.get('tiempo_maximo')),
-      objetivo: String(formData.get('objetivo')),
-    };
+  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    cerrar();
+  };
 
-    const result = ()=>{} // await guardarEspecificaciones(especificaciones); 
+  const handleCerrar = () => {
+    cerrar();
+  };
 
-    // if (result.success) {
-    //   setMessage('✅ Receta solicitada y especificaciones enviadas.');
-
-    // } else {
-    //   setMessage(`❌ Error: ${result.error}`);
-    // }
-    
-    setIsPending(false);
-  }
+  const handleUpdateEspecificaciones = (clave: string, valor: string) => {
+    updateEspecificaciones(clave, valor);
+  };
 
   return (
-    <form id="especificaciones-form" action={handleSubmit}>
-      <h2>Opciones de Receta (Opcional)</h2>
+    <>
+      <div className="fixed inset-0 bg-black opacity-80 z-[100]"></div>
+      <form
+        onSubmit={handleSubmit}
+        className="border border-black rounded-xl p-10 fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white z-[101] flex flex-col items-center gap-3"
+      >
+        <h1 className="font-bold text-3xl bg-gradient-to-r from-orange-500 to-yellow-300 bg-clip-text text-transparent">
+          Especificaciones
+        </h1>
 
-      <div>
-        <label htmlFor="tipo_dieta">Tipo de Dieta (Vegana, Keto, etc.)</label>
-        <input 
-          type="text" 
-          id="tipo_dieta" 
-          name="tipo_dieta" 
-          placeholder="Ej: vegetariana"
-          disabled={isPending}
-        />
-      </div>
+        <div className="flex flex-col gap-3">
+          <div className="flex flex-row items-center gap-2">
+            <label htmlFor="tipo_dieta">Tipo de Dieta:</label>
+            <input
+              type="text"
+              id="tipo_dieta"
+              name="tipo_dieta"
+              placeholder="(Vegana, Carne...)"
+              value={especificaciones?.tipo_dieta}
+              onChange={(e)=>handleUpdateEspecificaciones("tipo_dieta", e.target.value)}
+            />
+          </div>
 
-      <div>
-        <label htmlFor="restricciones">Restricciones Dietéticas</label>
-        <input 
-          type="text" 
-          id="restricciones" 
-          name="restricciones" 
-          placeholder="Ej: sin gluten, sin lactosa"
-          disabled={isPending}
-        />
-      </div>
+          <div className="flex flex-row items-center gap-2">
+            <label htmlFor="restricciones">Restricciones:</label>
+            <input
+              type="text"
+              id="restricciones"
+              name="restricciones"
+              placeholder="(Alimentos a evitar, alergias, salud...)"
+              value={especificaciones?.restricciones}
+              onChange={(e)=>handleUpdateEspecificaciones("restricciones", e.target.value)}
+            />
+          </div>
 
-      <div>
-        <label htmlFor="ingredientes_evitar">Ingredientes a Evitar</label>
-        <input 
-          type="text" 
-          id="ingredientes_evitar" 
-          name="ingredientes_evitar" 
-          placeholder="Ej: cebolla, champiñones"
-          disabled={isPending}
-        />
-      </div>
-      
-      <div>
-        <label htmlFor="tiempo_maximo">Tiempo Máximo (en minutos)</label>
-        <input 
-          type="number" 
-          id="tiempo_maximo" 
-          name="tiempo_maximo" 
-          placeholder="Ej: 30"
-          disabled={isPending}
-        />
-      </div>
-      
-      <div>
-        <label htmlFor="objetivo">Objetivo de la Comida</label>
-        <input 
-          type="text" 
-          id="objetivo" 
-          name="objetivo" 
-          placeholder="Ej: cena rápida, postre bajo en azúcar"
-          disabled={isPending}
-        />
-      </div>
+          <div className="flex flex-row items-center gap-2">
+            <label htmlFor="objetivo">Objetivo:</label>
+            <input
+              type="text"
+              id="objetivo"
+              name="objetivo"
+              placeholder="(Perder peso, ganar músculo...)"
+              value={especificaciones?.objetivo}
+              onChange={(e)=>handleUpdateEspecificaciones("objetivo", e.target.value)}
+            />
+          </div>
+        </div>
 
-      <button type="submit" disabled={isPending}>
-        {isPending ? 'Solicitando...' : 'Generar Receta'}
-      </button>
+        <div className="flex flex-row items-center gap-5">
+          <BotonGeneral texto="Cerrar" onClick={handleCerrar}></BotonGeneral>
 
-      {message && <p style={{ marginTop: '10px' }}>{message}</p>}
-    </form>
+          <button
+            className="font-bold cursor-pointer flex items-center p-4 bg-gradient-to-r from-[#E67E22] to-[#D35400] hover:from-[#D35400] hover:to-[#C0392B] text-white rounded-xl transition-all duration-300 hover:shadow-lg"
+            type="submit"
+          >
+            Guardar y Cerrar
+          </button>
+        </div>
+      </form>
+    </>
   );
 }
