@@ -2,8 +2,7 @@ import { SolicitudReceta } from "@/app/interfaces/SolicitudReceta";
 
 export const enviarReceta = async (
   solicitudReceta: SolicitudReceta
-): Promise<Response> => {
-  // Validación básica
+): Promise<{respuesta: string, estado: string}> => {
   if (!solicitudReceta?.comida || solicitudReceta.comida.trim() === "") {
     throw new Error("El campo 'comida' es obligatorio");
   }
@@ -19,7 +18,9 @@ export const enviarReceta = async (
       body: JSON.stringify(solicitudReceta),
     });
 
-    return response;
+    const data = await response.json()
+
+    return data;
   } catch (error) {
     throw error;
   }
