@@ -232,7 +232,7 @@ export default function Inicio() {
 
           <div className="prose prose-orange max-w-none text-[#343A40]  leading-relaxed">
             <p>{respuestaIA}</p>
-            {receta ? (
+            {receta && receta.nombrePlato ? (
               <div>
                 <h1 className="font-bold text-3xl">{receta.nombrePlato}</h1>
                 <hr className="mt-3 mb-3 border border-[#DCD3D0]"/>
@@ -267,7 +267,7 @@ export default function Inicio() {
                   ""
                 )}
               </div>
-            ): ""}
+            ): "Error al generar receta. Solo puedo realizar recetas de comida. Prueba a pedir una receta válida o prueba a cambiar de modelo."}
           </div>
         </div>
       )}
