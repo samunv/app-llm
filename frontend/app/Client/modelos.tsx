@@ -23,8 +23,8 @@ export const modelosGemini: Modelo[] = [
     color: "#FBBC04",
   },
   {
-    id: "gemini-1.0-pro",
-    nombre: "Gemini 1.0 Pro",
+    id: "gemini-1.5-flash",
+    nombre: "Gemini 1.5 Flash",
     version: "Profesional",
     descripcion: "Potente aunque no admite imagenes.",
     velocidad: "potente",
