@@ -19,6 +19,7 @@ import { enviarReceta } from "@/Server/Server";
 import { SolicitudReceta } from "../interfaces/SolicitudReceta";
 import remarkGfm from "remark-gfm";
 import TypingText from "./components/TypingText";
+import { Receta } from "../interfaces/Receta";
 
 export default function Inicio() {
   const [comidas, setComidas] = useState<Comida[]>([]);
@@ -39,6 +40,7 @@ export default function Inicio() {
   // Estados para la IA
   const [cargando, setCargando] = useState(false);
   const [respuestaIA, setRespuestaIA] = useState("");
+  const [receta, setReceta] = useState<Receta>();
 
   // Referencias
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -51,7 +53,8 @@ export default function Inicio() {
       try {
         const data = await enviarReceta(solicitudReceta);
         if (data.estado === "exito") {
-          setRespuestaIA(data.respuesta);
+          setRespuestaIA("Receta generada:");
+          setReceta(data.respuesta as Receta);
           updateSolicitudRecetaCallback("comida", "");
         } else {
           setRespuestaIA("Hubo un error al generar la receta.");
@@ -198,8 +201,9 @@ export default function Inicio() {
       {!respuestaIA && !cargando && (
         <h1 className="text-[#343A40] text-3xl text-center font-medium">
           ¡Hola! soy tu chef y hago recetas
-          <TypingText frases={[" rápidas.", " creativas.", " personalizadas."]} />
- 
+          <TypingText
+            frases={[" rápidas.", " creativas.", " personalizadas."]}
+          />
         </h1>
       )}
 
@@ -227,19 +231,54 @@ export default function Inicio() {
           </div>
 
           <div className="prose prose-orange max-w-none text-[#343A40]  leading-relaxed">
-            <ReactMarkdown remarkPlugins={[remarkGfm]}>
-              {respuestaIA}
-            </ReactMarkdown>
+            <p>{respuestaIA}</p>
+            {receta ? (
+              <div>
+                <h1 className="font-bold text-3xl">{receta.nombrePlato}</h1>
+                <hr className="mt-3 mb-3 border border-[#DCD3D0]"/>
+                <h2 className="font-bold text-2xl">Ingredientes</h2>
+                <ul>
+                  {receta.ingredientes?.map((ingrediente, index) => (
+                    <li key={index}>{ingrediente}</li>
+                  ))}
+                </ul>
+
+                <hr className="mt-3 mb-3 border border-[#DCD3D0]"/>
+                <h2 className="font-bold text-2xl">Pasos</h2>
+                <ul>
+                  {receta.pasos?.map((paso, index) => (
+                    <li key={index}>
+                      {index + 1 + ")"} {paso}
+                    </li>
+                  ))}
+                </ul>
+
+                
+
+                {receta.especificaciones ? (
+                  <>
+                  <hr className="mt-3 mb-3 border border-[#DCD3D0]"/>
+                    <h2 className="font-bold text-2xl">Especificaciones</h2>
+                    <p>
+                      {receta.especificaciones}
+                    </p>
+                  </>
+                ) : (
+                  ""
+                )}
+              </div>
+            ): ""}
           </div>
         </div>
       )}
 
       {/* BARRA DE ENTRADA PRINCIPAL */}
+
       <div
         className={
           respuestaIA
-            ? "fixed bottom-5 left-1/2 transform -translate-x-1/2 bg-white text-[#343A40] p-3 border-2 border-[#8D6E63]/30 rounded-2xl flex flex-row items-center w-[750px] gap-3 shadow-lg z-50 focus-within:border-[#E67E22] focus-within:ring-2 focus-within:ring-[#E67E22]/30 min-h-[65px] z-20"
-            : "bg-[white] text-[#343A40] p-3 border-2 border-[#8D6E63]/30 rounded-2xl flex flex-row items-center w-[750px] gap-3 shadow-lg focus-within:border-[#E67E22] focus-within:ring-2 focus-within:ring-[#E67E22]/30  min-h-[65px] z-20"
+            ? "fixed bottom-5 left-1/2 transform -translate-x-1/2 bg-white text-[#343A40] p-3 border-2 border-[#8D6E63]/30 rounded-2xl flex flex-row items-center w-[750px] gap-3 shadow-lg z-50 focus-within:border-[#E67E22] min-h-[65px] z-20"
+            : "bg-[white] text-[#343A40] p-3 border-2 border-[#8D6E63]/30 rounded-2xl flex flex-row items-center w-[750px] gap-3 shadow-lg focus-within:border-[#E67E22]  min-h-[65px] z-20"
         }
       >
         {/* Dropdown de Modelos */}
@@ -342,6 +381,12 @@ export default function Inicio() {
           }
           onKeyDown={(e) => e.key === "Enter" && handleEnviarReceta()}
         />
+        <BotonGeneral
+          texto=""
+          onClick={() => setMostrarFormEspecificaciones(true)}
+        >
+          <IoIosAddCircle size={20} />
+        </BotonGeneral>
 
         {modeloSeleccionado.id != "gemini-1.0-pro" ? (
           <div>
@@ -390,14 +435,7 @@ export default function Inicio() {
           )}
         </button>
       </div>
-
-       {/* BOTÓN ESPECIFICACIONES */}
-      <BotonGeneral
-        texto="Añadir especificaciones"
-        onClick={() => setMostrarFormEspecificaciones(true)}
-      >
-        <IoIosAddCircle size={20} />
-      </BotonGeneral>
+      {/* BOTÓN ESPECIFICACIONES */}
 
       {mostrarFormEspecificaciones && (
         <FormularioEspecificaciones cerrar={cerrarFormulario} />

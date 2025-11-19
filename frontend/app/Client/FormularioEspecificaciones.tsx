@@ -46,9 +46,9 @@ export default function FormularioEspecificaciones({ cerrar }: Props) {
       <form
         onSubmit={handleSubmit}
         className={`
-          relative w-full max-w-md bg-[#FAF9F5] rounded-3xl shadow-2xl 
+          relative w-full max-w-md bg-[white] border-2 border-[#DCD3D0] rounded-3xl shadow-2xl 
           transform transition-all duration-300 ease-out
-          border border-white/20
+          
           ${animarSalida ? 'scale-95 opacity-0 translate-y-4' : 'scale-100 opacity-100 translate-y-0 animate-scaleIn'}
         `}
       >
