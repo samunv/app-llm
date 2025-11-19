@@ -227,7 +227,7 @@ export default function Inicio() {
                 ></path>
               </svg>
             </div>
-            <h2 className="text-2xl font-bold text-[#343A40]">ChefGPT</h2>
+            <h2 className="font-bold text-[#343A40]">{modeloSeleccionado.nombre}</h2>
           </div>
 
           <div className="prose prose-orange max-w-none text-[#343A40]  leading-relaxed">
