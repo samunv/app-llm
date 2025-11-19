@@ -1,15 +1,15 @@
 "use client";
 
-import { useEffect, useState, useRef, JSX, useCallback } from "react";
-import { Comida } from "../interfaces/Comida";
+import { useEffect, useState, useRef, useCallback } from "react";
 import {
   FaPaperPlane,
   FaChevronDown,
   FaCheck,
   FaFilePdf,
   FaImage,
+  FaUser,
 } from "react-icons/fa6";
-import { FaRobot, FaBolt, FaRocket } from "react-icons/fa";
+import { FaRobot } from "react-icons/fa";
 import { IoIosAddCircle } from "react-icons/io";
 
 import "./Inicio.css";
@@ -20,26 +20,35 @@ import BotonGeneral from "./components/BotonGeneral";
 import { modelosGemini } from "./modelos";
 import { Modelo } from "../interfaces/Modelo";
 import { enviarReceta } from "@/Server/Server";
-import { SolicitudReceta } from "../interfaces/SolicitudReceta";
 import TypingText from "./components/TypingText";
 import { Receta } from "../interfaces/Receta";
 import GeneradorPDF from "./components/GeneradorPDF";
 
-// --- IMPORTS SIDEBAR Y CHAT ---
+// --- IMPORTS ---
 import Sidebar from "./components/Sidebar";
 import { useHistorial } from "../hooks/useHistorial";
 import { Conversacion } from "../interfaces/Conversacion";
+import ModalConfiguracion from "./components/ModalConfiguracion";
+import { usePerfil } from "../hooks/usePerfil";
+
+interface MensajeChat {
+  id: string;
+  rol: "usuario" | "ia";
+  tipo: "texto" | "receta";
+  contenido: string | Receta;
+}
 
 export default function Inicio() {
   // Contextos
   const { solicitudReceta, updateSolicitudReceta } = useSolicitudReceta();
   const { especificaciones } = useEspecificaciones();
 
-  // --- ESTADOS SIDEBAR E HISTORIAL ---
+  // Hooks
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const { historial, guardarConversacion, borrarConversacion } = useHistorial();
+  const { perfil, guardarPerfil, modalAbierto, setModalAbierto } = usePerfil();
 
-  // Estados locales de UI
+  // Estados UI
   const [isOpen, setIsOpen] = useState(false);
   const [modeloSeleccionado, setModeloSeleccionado] = useState<Modelo>(
     modelosGemini[0]
@@ -48,73 +57,139 @@ export default function Inicio() {
     useState<boolean>(false);
   const [imagenPreview, setImagenPreview] = useState<string>();
 
-  // Estados para la IA
+  // Estados Chat
+  const [chatLog, setChatLog] = useState<MensajeChat[]>([]);
   const [cargando, setCargando] = useState(false);
-  const [respuestaIA, setRespuestaIA] = useState("");
-  const [receta, setReceta] = useState<Receta>();
 
-  // Referencias
+  // Refs
   const dropdownRef = useRef<HTMLDivElement>(null);
   const inputFileRef = useRef<HTMLInputElement>(null);
 
-  // --- LÓGICA MODIFICADA (GUARDAR HISTORIAL) ---
-  const handleEnviarReceta = async () => {
-    if (solicitudReceta) {
-      setCargando(true);
-      setRespuestaIA("");
-      try {
-        const data = await enviarReceta(solicitudReceta);
-        if (data.estado === "exito") {
-          setRespuestaIA("Receta generada:");
-          const nuevaReceta = data.respuesta as Receta;
-          setReceta(nuevaReceta);
+  // Scroll automático
+  useEffect(() => {
+    if (chatLog.length > 0) {
+      window.scrollTo({
+        top: document.documentElement.scrollHeight,
+        behavior: "smooth",
+      });
+    }
+  }, [chatLog, cargando]);
 
-          // GUARDAR EN HISTORIAL
+  // --- LÓGICA DE ENVÍO ---
+  const handleEnviar = async () => {
+    const textoInput = solicitudReceta?.comida;
+    const imagenInput = solicitudReceta?.imagen;
+
+    if (!textoInput && !imagenInput) return;
+
+    // 1. Mensaje Usuario
+    const msgUsuario: MensajeChat = {
+      id: crypto.randomUUID(),
+      rol: "usuario",
+      tipo: "texto",
+      contenido: textoInput || (imagenInput ? "Analiza esta imagen" : ""),
+    };
+
+    const nuevoLog = [...chatLog, msgUsuario];
+    setChatLog(nuevoLog);
+    setCargando(true);
+    updateSolicitudRecetaCallback("comida", "");
+
+    try {
+      // 2. Historial para Backend
+      const historialBackend = nuevoLog.slice(0, -1).map((msg) => {
+        let texto = "";
+        if (msg.tipo === "texto") texto = msg.contenido as string;
+        else texto = JSON.stringify(msg.contenido);
+
+        return {
+          role: msg.rol === "usuario" ? "user" : "model",
+          parts: [{ text: texto }],
+        };
+      });
+
+      // 3. Payload
+      const payload = {
+        ...solicitudReceta,
+        comida: textoInput || "",
+        historial: historialBackend,
+        modeloIASeleccionado:
+          solicitudReceta?.modeloIASeleccionado || "gemini-2.5-flash",
+        imagen: solicitudReceta?.imagen || "",
+        tipoImagen: solicitudReceta?.tipoImagen || "",
+        perfilUsuario: perfil,
+      };
+
+      // 4. Petición
+      const data = await enviarReceta(payload);
+
+      if (data.estado === "exito") {
+        const msgIA: MensajeChat = {
+          id: crypto.randomUUID(),
+          rol: "ia",
+          tipo: data.tipo === "receta" ? "receta" : "texto",
+          contenido: data.respuesta,
+        };
+
+        setChatLog((prev) => [...prev, msgIA]);
+
+        if (data.tipo === "receta") {
           guardarConversacion(
-            nuevaReceta,
-            solicitudReceta.comida || "Receta sin nombre"
+            data.respuesta as Receta,
+            textoInput || "Receta generada"
           );
-
-          updateSolicitudRecetaCallback("comida", "");
-        } else {
-          setRespuestaIA("Hubo un error al generar la receta.");
         }
-      } catch (error) {
-        console.error("Error:", error);
-        setRespuestaIA(
-          "Error conectando con el servidor Python. Asegúrate de que 'python run.py' esté ejecutándose."
-        );
-      } finally {
-        setCargando(false);
+      } else {
+        setChatLog((prev) => [
+          ...prev,
+          {
+            id: crypto.randomUUID(),
+            rol: "ia",
+            tipo: "texto",
+            contenido: "Error: " + (data.error || "Desconocido"),
+          },
+        ]);
       }
+    } catch (error) {
+      console.error(error);
+      setChatLog((prev) => [
+        ...prev,
+        {
+          id: crypto.randomUUID(),
+          rol: "ia",
+          tipo: "texto",
+          contenido: "Error de conexión con el servidor.",
+        },
+      ]);
+    } finally {
+      setCargando(false);
     }
   };
 
-  // --- FUNCIONES SIDEBAR ---
+  // --- FUNCIONES AUXILIARES ---
   const cargarConversacionDesdeHistorial = (conv: Conversacion) => {
-    setReceta(conv.receta);
-    setRespuestaIA("Receta cargada del historial:");
-    updateSolicitudRecetaCallback("comida", "");
+    setChatLog([
+      {
+        id: crypto.randomUUID(),
+        rol: "ia",
+        tipo: "receta",
+        contenido: conv.receta,
+      },
+    ]);
     if (typeof window !== "undefined" && window.innerWidth < 768) {
       setSidebarOpen(false);
     }
   };
 
   const handleNuevaConversacion = () => {
-    setReceta(undefined);
-    setRespuestaIA("");
+    setChatLog([]);
     updateSolicitudRecetaCallback("comida", "");
     setImagenPreview(undefined);
+    updateSolicitudReceta("imagen", "");
   };
 
-  // --- MANEJADORES DE EVENTOS ---
-  const handleClickImagen = () => {
-    inputFileRef.current?.click();
-  };
-
-  const cerrarFormulario = () => {
-    setMostrarFormEspecificaciones(false);
-  };
+  const handleClickImagen = () => inputFileRef.current?.click();
+  const cerrarFormulario = () => setMostrarFormEspecificaciones(false);
 
   const handleFileChange = async (
     event: React.ChangeEvent<HTMLInputElement>
@@ -149,7 +224,6 @@ export default function Inicio() {
     }
   }
 
-  // Cerrar dropdown al hacer click fuera
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (
@@ -190,7 +264,6 @@ export default function Inicio() {
     }
   };
 
-  // Sincronizar modelo seleccionado
   useEffect(() => {
     if (modeloSeleccionado) {
       updateSolicitudRecetaCallback(
@@ -202,7 +275,6 @@ export default function Inicio() {
 
   return (
     <div className="flex w-full min-h-screen bg-[#FAF9F5] relative">
-      {/* --- SIDEBAR --- */}
       <Sidebar
         isOpen={sidebarOpen}
         toggleSidebar={() => setSidebarOpen(!sidebarOpen)}
@@ -210,22 +282,24 @@ export default function Inicio() {
         cargarConversacion={cargarConversacionDesdeHistorial}
         borrarConversacion={borrarConversacion}
         nuevaConversacion={handleNuevaConversacion}
+        abrirAjustes={() => setModalAbierto(true)}
       />
 
-      {/* --- MAIN (CONTENIDO) --- */}
       <main
         className={`
-        flex-1 flex flex-col items-center gap-6 transition-all duration-300 ease-in-out
-        ${sidebarOpen ? "md:ml-[300px]" : ""} 
-        /* AQUÍ ESTÁ LA CLAVE: Añadimos mucho padding abajo (pb-48) para que la barra no tape el texto */
-        ${respuestaIA ? "justify-start pt-10 pb-48" : "justify-center pb-20"}
-        min-h-screen
+        flex-1 flex flex-col items-center min-h-screen transition-all duration-300 ease-in-out
+        ${sidebarOpen ? "md:ml-[300px]" : ""}
+        ${
+          chatLog.length > 0
+            ? "justify-start pt-10 pb-48"
+            : "justify-center pb-20"
+        }
       `}
       >
-        {/* CABECERA LOGO */}
+        {/* LOGO */}
         <div
           className={`flex flex-row-reverse items-center gap-1 transition-all duration-500 ${
-            respuestaIA ? "scale-75" : ""
+            chatLog.length > 0 ? "scale-75 mb-2" : "mb-8"
           }`}
         >
           <h1 className="text-6xl font-bold bg-gradient-to-r from-orange-500 to-yellow-300 bg-clip-text text-transparent inline-block">
@@ -248,9 +322,9 @@ export default function Inicio() {
           </svg>
         </div>
 
-        {/* TEXTO BIENVENIDA */}
-        {!respuestaIA && !cargando && (
-          <h1 className="text-[#343A40] text-3xl text-center font-medium animate-fadeIn">
+        {/* BIENVENIDA */}
+        {chatLog.length === 0 && !cargando && (
+          <h1 className="text-[#343A40] text-3xl text-center font-medium animate-fadeIn px-4">
             ¡Hola! soy tu chef y hago recetas
             <TypingText
               frases={[" rápidas.", " creativas.", " personalizadas."]}
@@ -258,84 +332,135 @@ export default function Inicio() {
           </h1>
         )}
 
-        {/* RESPUESTA IA */}
-        {respuestaIA && (
-          <div className="w-full max-w-[750px] bg-white p-8 rounded-3xl shadow-xl border-2 border-[#DCD3D0] animate-fadeIn mb-4">
-            <div className="flex items-center gap-3 pb-4">
-              <div className="flex flex-row items-center gap-2">
+        {/* --- AREA CHAT --- */}
+        <div className="w-full max-w-[750px] px-4 flex flex-col gap-8">
+          {chatLog.map((msg) => (
+            <div
+              key={msg.id}
+              className={`flex w-full ${
+                msg.rol === "usuario" ? "justify-end" : "justify-start"
+              } animate-fadeIn`}
+            >
+              {/* TEXTO (Usuario o IA Conversación) */}
+              {msg.tipo === "texto" && (
                 <div
-                  className="p-2.5 rounded-lg flex-shrink-0 shadow-sm"
-                  style={{
-                    backgroundColor: `${modeloSeleccionado.color}15`,
-                    color: modeloSeleccionado.color,
-                  }}
+                  className={`max-w-[85%] p-5 rounded-2xl shadow-sm text-base leading-relaxed ${
+                    msg.rol === "usuario"
+                      ? "bg-[#F0F4F9] text-[#1F1F1F] rounded-br-sm"
+                      : "bg-white border border-[#E6E6E6] text-[#343A40] rounded-bl-sm"
+                  }`}
                 >
-                  {modeloSeleccionado.icono}
+                  {msg.rol === "ia" && (
+                    <div className="flex items-center gap-2 mb-2 font-bold text-[#E67E22]">
+                      <FaRobot /> ChefGPT
+                    </div>
+                  )}
+                  <p className="whitespace-pre-wrap">{msg.contenido as string}</p>
                 </div>
-                <h2 className="font-bold text-[#343A40]">
-                  {modeloSeleccionado.nombre}
-                </h2>
-              </div>
-            </div>
+              )}
 
-            <div className="prose prose-orange max-w-none text-[#343A40] leading-relaxed">
-              <p>{respuestaIA}</p>
-              {receta && receta.nombrePlato ? (
-                <div>
-                  <div id="respuesta-receta" className="mb-5">
-                    <h1 className="font-bold text-3xl">{receta.nombrePlato}</h1>
-                    <hr className="mt-3 mb-3 border border-[#DCD3D0]" />
-                    <h2 className="font-bold text-2xl">Ingredientes</h2>
-                    <ul>
-                      {receta.ingredientes?.map((ingrediente, index) => (
-                        <li key={index}>{ingrediente}</li>
-                      ))}
-                    </ul>
-
-                    <hr className="mt-3 mb-3 border border-[#DCD3D0]" />
-                    <h2 className="font-bold text-2xl">Pasos</h2>
-                    <ul>
-                      {receta.pasos?.map((paso, index) => (
-                        <li key={index}>
-                          {index + 1 + ")"} {paso}
-                        </li>
-                      ))}
-                    </ul>
-
-                    {receta.especificaciones ? (
-                      <>
-                        <hr className="mt-3 mb-3 border border-[#DCD3D0]" />
-                        <h2 className="font-bold text-2xl">Especificaciones</h2>
-                        <p>{receta.especificaciones}</p>
-                      </>
-                    ) : (
-                      ""
-                    )}
+              {/* RECETA (Diseño Original Restaurado) */}
+              {msg.tipo === "receta" && (
+                <div className="w-full bg-white p-10 rounded-3xl shadow-xl border-2 border-[#DCD3D0]">
+                  {/* Cabecera Modelo */}
+                  <div className="flex items-center gap-3 pb-4 mb-2">
+                    <div className="flex flex-row items-center gap-2">
+                      <div
+                        className="p-2.5 rounded-lg flex-shrink-0 shadow-sm"
+                        style={{
+                          backgroundColor: `${modeloSeleccionado.color}15`,
+                          color: modeloSeleccionado.color,
+                        }}
+                      >
+                        {modeloSeleccionado.icono}
+                      </div>
+                      <h2 className="font-bold text-[#343A40]">
+                        {modeloSeleccionado.nombre}
+                      </h2>
+                    </div>
                   </div>
-                  <GeneradorPDF htmlElement="respuesta-receta" />
+
+                  {/* Contenido Receta (Estilo Original) */}
+                  {(() => {
+                    const r = msg.contenido as Receta;
+                    return (
+                      <div className="prose prose-orange max-w-none text-[#343A40] leading-relaxed">
+                        <div id={`receta-${msg.id}`} className="mb-5">
+                          <h1 className="font-bold text-3xl text-[#343A40]">
+                            {r.nombrePlato}
+                          </h1>
+                          
+                          <hr className="mt-4 mb-4 border border-[#DCD3D0]" />
+                          
+                          <h2 className="font-bold text-2xl text-[#343A40]">
+                            Ingredientes
+                          </h2>
+                          <ul className="list-disc pl-5 space-y-1">
+                            {r.ingredientes?.map((ingrediente, index) => (
+                              <li key={index}>{ingrediente}</li>
+                            ))}
+                          </ul>
+
+                          <hr className="mt-4 mb-4 border border-[#DCD3D0]" />
+                          
+                          <h2 className="font-bold text-2xl text-[#343A40]">
+                            Pasos
+                          </h2>
+                          <ul className="space-y-2">
+                            {r.pasos?.map((paso, index) => (
+                              <li key={index} className="list-none">
+                                <span className="font-bold mr-1">{index + 1})</span> {paso}
+                              </li>
+                            ))}
+                          </ul>
+
+                          {r.especificaciones && (
+                            <>
+                              <hr className="mt-4 mb-4 border border-[#DCD3D0]" />
+                              <h2 className="font-bold text-2xl text-[#343A40]">
+                                Especificaciones
+                              </h2>
+                              <p>{r.especificaciones}</p>
+                            </>
+                          )}
+                        </div>
+                        
+                        {/* Botón PDF Integrado */}
+                        <GeneradorPDF htmlElement={`receta-${msg.id}`} />
+                      </div>
+                    );
+                  })()}
                 </div>
-              ) : (
-                "Error al generar receta. Solo puedo realizar recetas de comida. Prueba a pedir una receta válida o prueba a cambiar de modelo."
               )}
             </div>
-          </div>
-        )}
+          ))}
 
-        {/* --- BARRA DE ENTRADA FLOTANTE --- */}
+          {/* Loading */}
+          {cargando && (
+            <div className="flex justify-start w-full animate-pulse">
+              <div className="bg-white p-4 rounded-2xl rounded-bl-none border border-gray-200 flex items-center gap-2 shadow-sm">
+                <div className="w-2 h-2 bg-orange-400 rounded-full animate-bounce"></div>
+                <div className="w-2 h-2 bg-orange-400 rounded-full animate-bounce delay-100"></div>
+                <div className="w-2 h-2 bg-orange-400 rounded-full animate-bounce delay-200"></div>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* BARRA FLOTANTE */}
         <div
           className={`
-            bg-white text-[#343A40] p-2 pr-3 pl-4 border-2 border-[#8D6E63]/30 rounded-2xl flex flex-row items-center gap-3 shadow-2xl shadow-orange-500/10 focus-within:border-[#E67E22] transition-all duration-500 z-50
+            bg-white text-[#343A40] p-2 pr-3 pl-4 border-2 border-[#8D6E63]/30 rounded-2xl flex flex-row items-center gap-3 shadow-2xl shadow-orange-500/10 focus-within:border-[#E67E22] focus-within:ring-4 focus-within:ring-orange-500/10 transition-all duration-500 z-50
             ${
-              respuestaIA
+              chatLog.length > 0
                 ? `fixed bottom-8 w-[750px] ${
-                    // CENTRADO DINÁMICO: Si el sidebar está abierto, compensamos el centro
                     sidebarOpen ? "left-[calc(50%+150px)]" : "left-1/2"
                   } transform -translate-x-1/2`
                 : "w-[750px] min-h-[70px]"
             }
           `}
         >
-          {/* Dropdown de Modelos */}
+          {/* Dropdown */}
           <div className="relative" ref={dropdownRef}>
             <button
               onClick={() => setIsOpen(!isOpen)}
@@ -352,7 +477,7 @@ export default function Inicio() {
               >
                 {modeloSeleccionado.icono}
               </div>
-              <div className="flex-1 text-left min-w-0">
+              <div className="flex-1 text-left min-w-0 hidden sm:block">
                 <div className="text-xs font-bold leading-tight truncate">
                   {modeloSeleccionado.nombre}
                 </div>
@@ -369,58 +494,46 @@ export default function Inicio() {
 
             {isOpen && (
               <div
-                className={`absolute left-0 w-[420px] max-h-[220px] overflow-y-auto bg-white rounded-2xl shadow-2xl border-2 border-2 border-[#DCD3D0] z-50 animate-fadeIn
-              ${
-                // Si la barra está fija abajo, el menú sale hacia ARRIBA. Si no, hacia ABAJO.
-                respuestaIA ? "bottom-full mb-3" : "top-full mt-1"
-              }
+                className={`absolute left-0 w-[350px] max-h-[300px] overflow-y-auto bg-white rounded-2xl shadow-2xl border border-gray-200 z-50 animate-fadeIn p-2
+              ${chatLog.length > 0 ? "bottom-full mb-3" : "top-full mt-1"}
               `}
               >
-                {" "}
-                <div className="p-3">
-                  {modelosGemini.map((modelo) => {
-                    const velocidadConfig = getVelocidadConfig(
-                      modelo.velocidad
-                    );
-                    return (
-                      <button
-                        key={modelo.id}
-                        onClick={() => seleccionarModelo(modelo)}
-                        className={`w-full p-3.5 mb-2 rounded-xl flex items-start gap-3 transition-all duration-300 hover:scale-[1.01] hover:shadow-md border-2 relative ${
-                          modeloSeleccionado.id === modelo.id
-                            ? "bg-gradient-to-br from-[#E67E22]/10 via-[#D35400]/5 to-transparent border-[#E67E22] shadow-sm"
-                            : "bg-white border-gray-200 hover:border-[#E67E22]/40"
-                        }`}
-                      >
-                        <div
-                          className="p-2.5 rounded-lg flex-shrink-0 shadow-sm"
-                          style={{
-                            backgroundColor: `${modelo.color}15`,
-                            color: modelo.color,
-                          }}
-                        >
-                          {modelo.icono}
-                        </div>
-                        <div className="flex-1 text-left min-w-0">
-                          <div className="flex items-center justify-between mb-1">
-                            <span className="font-bold text-[#343A40] text-sm block truncate">
-                              {modelo.nombre}
-                            </span>
-                            {modeloSeleccionado.id === modelo.id && (
-                              <FaCheck className="text-[#E67E22] text-sm animate-scaleIn flex-shrink-0 ml-2" />
-                            )}
-                          </div>
-                          <div className="text-xs text-[#343A40]/75 mb-2 leading-relaxed">
-                            {modelo.descripcion}
-                          </div>
-                        </div>
-                      </button>
-                    );
-                  })}
-                </div>
+                {modelosGemini.map((modelo) => (
+                  <button
+                    key={modelo.id}
+                    onClick={() => seleccionarModelo(modelo)}
+                    className={`w-full p-3 mb-1 rounded-xl flex items-center gap-3 transition-all duration-200 hover:bg-gray-50 ${
+                      modeloSeleccionado.id === modelo.id
+                        ? "bg-orange-50 border border-orange-100"
+                        : ""
+                    }`}
+                  >
+                    <div
+                      className="p-2 rounded-lg flex-shrink-0 shadow-sm bg-white"
+                      style={{ color: modelo.color }}
+                    >
+                      {modelo.icono}
+                    </div>
+                    <div className="flex-1 text-left">
+                      <div className="flex items-center justify-between">
+                        <span className="font-bold text-gray-700 text-sm">
+                          {modelo.nombre}
+                        </span>
+                        {modeloSeleccionado.id === modelo.id && (
+                          <FaCheck className="text-[#E67E22] text-xs" />
+                        )}
+                      </div>
+                      <div className="text-xs text-gray-400">
+                        {modelo.descripcion}
+                      </div>
+                    </div>
+                  </button>
+                ))}
               </div>
             )}
           </div>
+
+          <div className="w-px h-8 bg-gray-200 mx-1"></div>
 
           <input
             type="file"
@@ -431,33 +544,42 @@ export default function Inicio() {
 
           <input
             type="text"
-            placeholder="¿Qué vamos a preparar hoy?"
-            className="placeholder:text-[#8D6E63]/60 flex-1 outline-none text-base bg-transparent px-2"
+            placeholder={
+              chatLog.length > 0
+                ? "Pregunta sobre la receta..."
+                : "¿Qué vamos a preparar hoy?"
+            }
+            className="flex-1 outline-none text-base bg-transparent px-2 text-gray-700 placeholder-gray-400"
             value={solicitudReceta?.comida ?? ""}
             onChange={(e) =>
               updateSolicitudRecetaCallback("comida", e.target.value)
             }
-            onKeyDown={(e) => e.key === "Enter" && handleEnviarReceta()}
+            onKeyDown={(e) => e.key === "Enter" && handleEnviar()}
           />
+
           <BotonGeneral texto="" onClick={() => {}}>
-            <FaFilePdf size={20} />
+            <FaFilePdf
+              size={20}
+              className="text-gray-400 hover:text-red-500 transition-colors"
+            />
           </BotonGeneral>
           <BotonGeneral
             texto=""
             onClick={() => setMostrarFormEspecificaciones(true)}
           >
-            <IoIosAddCircle size={20} />
+            <IoIosAddCircle
+              size={22}
+              className="text-gray-400 hover:text-[#E67E22] transition-colors"
+            />
           </BotonGeneral>
 
-          {modeloSeleccionado.id != "gemini-1.0-pro" ? (
+          {modeloSeleccionado.id != "gemini-1.0-pro" && (
             <div>
               {imagenPreview ? (
-                <div className="relative">
+                <div className="relative group w-10 h-10">
                   <img
                     src={imagenPreview}
-                    alt="Preview"
-                    className="w-[50px] h-[50px] rounded-xl object-cover cursor-pointer border-2 border-[#DBD0C9]"
-                    onClick={handleClickImagen}
+                    className="w-full h-full object-cover rounded-lg border border-orange-200"
                   />
                   <button
                     onClick={(e) => {
@@ -465,7 +587,7 @@ export default function Inicio() {
                       setImagenPreview(undefined);
                       updateSolicitudReceta("imagen", "");
                     }}
-                    className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 w-5 h-5 flex items-center justify-center text-xs"
+                    className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-4 h-4 flex items-center justify-center text-[10px] shadow-sm"
                   >
                     ✕
                   </button>
@@ -473,21 +595,21 @@ export default function Inicio() {
               ) : (
                 <button
                   onClick={handleClickImagen}
-                  className="bg-[#e1ded3] hover:bg-[#d4d1c6] transition-colors rounded-xl flex flex-col items-center justify-center w-[50px] h-[50px] cursor-pointer"
-                  title="Subir foto de comida"
+                  className="p-2 text-gray-400 hover:bg-gray-100 rounded-xl transition-colors"
+                  title="Subir foto"
                 >
-                  <FaImage size={20} color="#8D6E63" />
+                  <FaImage size={20} />
                 </button>
               )}
             </div>
-          ) : (
-            ""
           )}
 
           <button
-            onClick={handleEnviarReceta}
-            disabled={cargando || !solicitudReceta?.comida}
-            className={`bg-gradient-to-r from-[#E67E22] to-[#D35400] hover:from-[#D35400] hover:to-[#C0392B] rounded-full p-3 text-white cursor-pointer transition-all duration-300 shadow-md hover:shadow-lg hover:scale-105 active:scale-95 flex-shrink-0 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed`}
+            onClick={handleEnviar}
+            disabled={
+              cargando || (!solicitudReceta?.comida && !solicitudReceta?.imagen)
+            }
+            className={`bg-[#E67E22] hover:bg-[#D35400] text-white p-3 rounded-xl transition-all shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center`}
           >
             {cargando ? (
               <div className="w-[18px] h-[18px] border-2 border-white border-t-transparent rounded-full animate-spin"></div>
@@ -497,12 +619,19 @@ export default function Inicio() {
           </button>
         </div>
 
-        {/* BOTÓN ESPECIFICACIONES */}
+        {/* Modales */}
         {mostrarFormEspecificaciones && (
           <FormularioEspecificaciones cerrar={cerrarFormulario} />
         )}
+        {modalAbierto && (
+          <ModalConfiguracion
+            perfilActual={perfil}
+            guardar={guardarPerfil}
+            cerrar={() => setModalAbierto(false)}
+          />
+        )}
 
-        {/* ESTILOS EN LINEA PARA ANIMACIONES */}
+        {/* Estilos Animación */}
         <style jsx>{`
           @keyframes fadeIn {
             from {
@@ -515,7 +644,7 @@ export default function Inicio() {
             }
           }
           .animate-fadeIn {
-            animation: fadeIn 0.5s ease-out forwards;
+            animation: fadeIn 0.4s ease-out forwards;
           }
         `}</style>
       </main>
