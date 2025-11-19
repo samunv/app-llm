@@ -90,7 +90,7 @@ export default function FormularioEspecificaciones({ cerrar }: Props) {
                 type="text"
                 id="tipo_dieta"
                 placeholder="Ej: Vegana, Keto, Mediterránea..."
-                className="block w-full pl-10 pr-4 py-3 bg-[#FAF9F5] border border-[gray] rounded-xl text-[#343A40] placeholder-[gray] focus:outline-none focus:bg-white focus:border-[#E67E22] focus:ring-4 focus:ring-[#E67E22]/10 transition-all"
+                className="block w-full pl-10 pr-4 py-3 bg-[white] border border-[gray] rounded-xl text-[#343A40] placeholder-[gray] focus:outline-none focus:bg-white focus:border-[#E67E22] focus:ring-4 focus:ring-[#E67E22]/10 transition-all"
                 value={especificaciones?.tipo_dieta}
                 onChange={(e) => handleUpdate("tipo_dieta", e.target.value)}
               />
@@ -110,7 +110,7 @@ export default function FormularioEspecificaciones({ cerrar }: Props) {
                 type="text"
                 id="restricciones"
                 placeholder="Ej: Sin gluten, nueces, lactosa..."
-                className="block w-full pl-10 pr-4 py-3 bg-[#FAF9F5] border border-[gray] rounded-xl text-gray-700 placeholder-[gray] focus:outline-none focus:bg-white focus:border-red-400 focus:ring-4 focus:ring-red-500/10 transition-all"
+                className="block w-full pl-10 pr-4 py-3 bg-[white] border border-[gray] rounded-xl text-gray-700 placeholder-[gray] focus:outline-none focus:bg-white focus:border-red-400 focus:ring-4 focus:ring-red-500/10 transition-all"
                 value={especificaciones?.restricciones}
                 onChange={(e) => handleUpdate("restricciones", e.target.value)}
               />
@@ -130,7 +130,7 @@ export default function FormularioEspecificaciones({ cerrar }: Props) {
                 type="text"
                 id="objetivo"
                 placeholder="Ej: Alto en proteína, bajo en carbos..."
-                className="block w-full pl-10 pr-4 py-3 bg-[#FAF9F5] border border-[gray] rounded-xl text-gray-700 placeholder-[gray] focus:outline-none focus:bg-white focus:border-blue-400 focus:ring-4 focus:ring-blue-500/10 transition-all"
+                className="block w-full pl-10 pr-4 py-3 bg-[white] border border-[gray] rounded-xl text-gray-700 placeholder-[gray] focus:outline-none focus:bg-white focus:border-blue-400 focus:ring-4 focus:ring-blue-500/10 transition-all"
                 value={especificaciones?.objetivo}
                 onChange={(e) => handleUpdate("objetivo", e.target.value)}
               />
