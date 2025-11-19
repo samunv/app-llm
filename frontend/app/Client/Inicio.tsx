@@ -6,7 +6,7 @@ import { FaPaperPlane, FaChevronDown, FaCheck, FaXmark } from "react-icons/fa6";
 import { SiGoogle } from "react-icons/si";
 import { FaRobot, FaBolt, FaRocket, FaImage } from "react-icons/fa";
 import { IoIosAddCircle } from "react-icons/io";
-import ReactMarkdown from 'react-markdown';
+import ReactMarkdown from "react-markdown";
 
 import "./Inicio.css";
 import { useSolicitudReceta } from "../contexts/SolicitudRecetaContext";
@@ -15,9 +15,9 @@ import FormularioEspecificaciones from "./FormularioEspecificaciones";
 import BotonGeneral from "./components/BotonGeneral";
 import { modelosGemini } from "./modelos";
 import { Modelo } from "../interfaces/Modelo";
-
-
-
+import { enviarReceta } from "@/Server/Server";
+import { SolicitudReceta } from "../interfaces/SolicitudReceta";
+import remarkGfm from "remark-gfm";
 
 export default function Inicio() {
   const [comidas, setComidas] = useState<Comida[]>([]);
@@ -43,41 +43,25 @@ export default function Inicio() {
   const dropdownRef = useRef<HTMLDivElement>(null);
   const inputFileRef = useRef<HTMLInputElement>(null);
 
-  // --- LÓGICA DE CONEXIÓN CON BACKEND (PYTHON) ---
-  const enviarReceta = async () => {
-    // Validación básica
-    if (!solicitudReceta?.comida || solicitudReceta.comida.trim() === "")
-      return;
-
-    setCargando(true);
-    setRespuestaIA(""); // Limpiar respuesta anterior
-    console.log("Enviando >>> ", solicitudReceta);
-
-    try {
-      const response = await fetch("http://127.0.0.1:5000/api/ia", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(solicitudReceta),
-      });
-
-      if (!response.ok) throw new Error("Error en la respuesta del servidor");
-
-      const data = await response.json();
-
-      if (data.estado === "exito") {
-        setRespuestaIA(data.respuesta);
-      } else {
-        setRespuestaIA("Hubo un error al generar la receta: " + data.error);
+  const handleEnviarReceta = async () => {
+    if (solicitudReceta) {
+      setCargando(true);
+      setRespuestaIA("");
+      try {
+        const data = await enviarReceta(solicitudReceta);
+        if (data.estado === "exito") {
+          setRespuestaIA(data.respuesta);
+        } else {
+          setRespuestaIA("Hubo un error al generar la receta.");
+        }
+      } catch (error) {
+        console.error("Error:", error);
+        setRespuestaIA(
+          "Error conectando con el servidor Python. Asegúrate de que 'python run.py' esté ejecutándose."
+        );
+      } finally {
+        setCargando(false);
       }
-    } catch (error) {
-      console.error("Error:", error);
-      setRespuestaIA(
-        "Error conectando con el servidor Python. Asegúrate de que 'python run.py' esté ejecutándose."
-      );
-    } finally {
-      setCargando(false);
     }
   };
 
@@ -108,12 +92,21 @@ export default function Inicio() {
       const reader = new FileReader();
       reader.onload = () => {
         const base64Url = String(reader.result);
+        obtenerTipoImagenDeImagen(base64Url);
         const base64Data = base64Url?.split(",")[1];
         resolve(base64Data);
       };
       reader.onerror = (error) => reject(error);
       reader.readAsDataURL(file);
     });
+  }
+
+  function obtenerTipoImagenDeImagen(imagenBase64URL: string){
+    const match = imagenBase64URL.match(/^data:([^;]+);base64,/);
+  
+  if (match && match[1]) {
+    updateSolicitudRecetaCallback("tipoImagen", match[1])
+  }
   }
 
   // useEffect(() => {
@@ -300,45 +293,46 @@ export default function Inicio() {
           onChange={(e) =>
             updateSolicitudRecetaCallback("comida", e.target.value)
           }
-          onKeyDown={(e) => e.key === "Enter" && enviarReceta()}
+          onKeyDown={(e) => e.key === "Enter" && handleEnviarReceta()}
         />
 
         {modeloSeleccionado.id != "gemini-1.0-pro" ? (
           <div>
             {imagenPreview ? (
-          <div className="relative">
-            <img
-              src={imagenPreview}
-              alt="Preview"
-              className="w-[50px] h-[50px] rounded-xl object-cover cursor-pointer border-2 border-[#DBD0C9]"
-              onClick={handleClickImagen}
-            />
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                setImagenPreview(undefined);
-                updateSolicitudReceta("imagen", "");
-              }}
-              className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 w-5 h-5 flex items-center justify-center text-xs"
-            >
-              ✕
-            </button>
+              <div className="relative">
+                <img
+                  src={imagenPreview}
+                  alt="Preview"
+                  className="w-[50px] h-[50px] rounded-xl object-cover cursor-pointer border-2 border-[#DBD0C9]"
+                  onClick={handleClickImagen}
+                />
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setImagenPreview(undefined);
+                    updateSolicitudReceta("imagen", "");
+                  }}
+                  className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 w-5 h-5 flex items-center justify-center text-xs"
+                >
+                  ✕
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={handleClickImagen}
+                className="bg-[#e1ded3] hover:bg-[#d4d1c6] transition-colors rounded-xl flex flex-col items-center justify-center w-[50px] h-[50px] cursor-pointer"
+                title="Subir foto de comida"
+              >
+                <FaImage size={20} color="#8D6E63" />
+              </button>
+            )}
           </div>
         ) : (
-          <button
-            onClick={handleClickImagen}
-            className="bg-[#e1ded3] hover:bg-[#d4d1c6] transition-colors rounded-xl flex flex-col items-center justify-center w-[50px] h-[50px] cursor-pointer"
-            title="Subir foto de comida"
-          >
-            <FaImage size={20} color="#8D6E63" />
-          </button>
+          ""
         )}
-        </div>): "" }
-
-       
 
         <button
-          onClick={enviarReceta}
+          onClick={handleEnviarReceta}
           disabled={cargando || !solicitudReceta?.comida}
           className={`bg-gradient-to-r from-[#E67E22] to-[#D35400] hover:from-[#D35400] hover:to-[#C0392B] rounded-full p-3 text-white cursor-pointer transition-all duration-300 shadow-md hover:shadow-lg hover:scale-105 active:scale-95 flex-shrink-0 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed`}
         >
@@ -379,13 +373,15 @@ export default function Inicio() {
                 ></path>
               </svg>
             </div>
-            <h2 className="text-2xl font-bold text-gray-800">
-              Receta Generada
+            <h2 className="text-2xl font-bold text-[#343A40]">
+              ChefGPT
             </h2>
           </div>
 
-          <div className="prose prose-orange max-w-none text-gray-700 whitespace-pre-wrap leading-relaxed">
-            <ReactMarkdown>{respuestaIA}</ReactMarkdown>
+          <div className="prose prose-orange max-w-none text-[#343A40]  leading-relaxed">
+            <ReactMarkdown remarkPlugins={[remarkGfm]}>
+  {respuestaIA}
+</ReactMarkdown>
           </div>
         </div>
       )}

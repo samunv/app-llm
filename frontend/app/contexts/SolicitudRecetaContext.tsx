@@ -41,8 +41,9 @@ export const SolicitudRecetaProvider = ({
           return {
             [claveActualizar]: valorActualizar,
             modeloIASeleccionado: modeloSeleccionadoID,
-            especificaciones: undefined,
-            imagen: undefined,
+            especificaciones: {},
+            tipoImagen: "",
+            imagen: "",
           };
         }
         return {

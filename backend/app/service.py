@@ -2,50 +2,69 @@ import os
 import requests
 import json
 from dotenv import load_dotenv
+from app.models.SolicitudReceta import SolicitudReceta
+from app.models.Especificaciones import Especificaciones
 
 load_dotenv()
 
 api_key = os.getenv("GOOGLE_API_KEY")
 
-def generar_receta_ia(datos_solicitud):
+def generar_receta_ia(datos_solicitud: SolicitudReceta):
     if not api_key:
         return "Error: Falta la API Key en el archivo .env"
 
-    modelo_id = datos_solicitud.get('modeloIASeleccionado', 'gemini-1.5-flash')
-    imagen = datos_solicitud.get('imagen', '')
+    modelo_id = datos_solicitud.modeloIASeleccionado or 'gemini-2.5-flash'
+    imagen = datos_solicitud.imagen or ''
+    tipoImagen = datos_solicitud.tipoImagen
 
     prompt = obtenerPrompt(datos_solicitud)
-    payloadFinal = obtenerPayloadFinal(prompt, imagen)
+    payloadFinal = obtenerPayloadFinal(prompt, imagen, tipoImagen=tipoImagen)
 
     return obtenerRespuestaIA(payloadFinal, modelo_id, api_key)
 
 
-def obtenerPrompt(datos_solicitud):
-    comida = datos_solicitud.get('comida', '')
-    especificaciones = datos_solicitud.get('especificaciones', {})
+def obtenerPrompt(datos_solicitud: SolicitudReceta):
+    comida = datos_solicitud.comida or ''
+    especificaciones = datos_solicitud.especificaciones or Especificaciones()
 
-    tipo_dieta = especificaciones.get('tipo_dieta', '')
-    restricciones = especificaciones.get('restricciones', '')
-    objetivo = especificaciones.get('objetivo', '')
+    tipo_dieta = especificaciones.tipo_dieta or ''
+    restricciones = especificaciones.restricciones or ''
+    objetivo = especificaciones.objetivo or ''
 
-    return (
-        f"Eres ChefGPT. Responde SOLO con una receta detallada en español sobre: {comida} "
-        f"con estas especificaciones del usuario si al menos una está definida. "
-        f"Tipo de dieta: {tipo_dieta}, Objetivo: {objetivo}, Restricciones: {restricciones}. "
-        "Si no es comida, di que no puedes ayudar. "
-        "Estructura la respuesta con Título, Ingredientes y Pasos. "
-        "Incluye un apartado de Especificaciones si hay alguna definida. "
-        "Formato markdown: título del plato '#', subtítulos '###'."
-    )
+    return f"""
+Eres ChefGPT. RESPONDE **SOLO** con la receta en formato Markdown, sin ningún texto adicional. 
+No agregues saludos, confirmaciones ni explicaciones.
+
+## INFORMACIÓN DEL USUARIO
+Comida: "{comida}"
+Tipo de dieta: {tipo_dieta}
+Objetivo: {objetivo}
+Restricciones: {restricciones}
+
+## FORMATO OBLIGATORIO (Markdown)
+# Título del plato
+## Especificaciones (solo si existen)
+## Ingredientes
+- ingrediente 1
+- ingrediente 2
+- ...
+
+## Pasos
+1. Paso 1
+2. Paso 2
+3. ...
+
+No agregues nada fuera de esta estructura.
+    """
 
 
-def obtenerPayloadFinal(prompt, imagen=""):
-    if imagen:
+def obtenerPayloadFinal(prompt, imagen, tipoImagen):
+    if imagen and tipoImagen:
         payloadFinal = {
             "contents": [
                 {
                     "parts": [
-                        {"inline_data": {"data": imagen, "mime_type": "image/jpeg"}},
+                        {"inline_data": {"data": imagen, "mime_type": tipoImagen}},
                         {"text": prompt}
                     ]
                 }
