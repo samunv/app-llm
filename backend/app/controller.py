@@ -1,42 +1,43 @@
 from flask import Flask, request, jsonify
-from app.service import generar_receta_ia
+from app.service import generar_respuesta_ia
 from app.models.Especificaciones import Especificaciones
 from app.models.SolicitudReceta import SolicitudReceta
 
 app = Flask(__name__)
 
-# Endpoint POST
 @app.route('/api/ia', methods=['POST'])
 def procesar_solicitud():
     try:
-        # Recibimos el JSON del frontend (SolicitudReceta)
         datos = request.get_json()
-        print("📩 Solicitud recibida:", datos) # Log para ver en consola
 
-        # Convertir el dict a Objetos
-        especificacionesObj = Especificaciones(**datos.get("especificaciones", {})) # rellenar los parametros
+        especificacionesObj = Especificaciones(**datos.get("especificaciones", {}))
+        
         solicitudRecetaObj = SolicitudReceta(
             comida=datos.get('comida', ''),
             modeloIASeleccionado=datos.get('modeloIASeleccionado', ''),
             imagen=datos.get('imagen', ''),
             tipoImagen=datos.get('tipoImagen',''),
             especificaciones=especificacionesObj or Especificaciones(),
+            historial=datos.get('historial', []),
+            perfilUsuario=datos.get('perfilUsuario', {}) # <--- Capturamos el perfil
         )
 
-        # Llamamos a la IA
-        respuesta_ia = generar_receta_ia(solicitudRecetaObj)
+        # Llamamos al servicio
+        respuesta_ia = generar_respuesta_ia(solicitudRecetaObj)
 
-        # Log por si hay errores
-        print(respuesta_ia)
-
+        # Si es objeto Receta, lo pasamos a dict. Si es texto (chat), se queda como texto.
         if hasattr(respuesta_ia, "to_dict"):
             respuesta_ia = respuesta_ia.to_dict()
+            tipo_respuesta = "receta"
+        else:
+            tipo_respuesta = "chat"
 
-        # Devolvemos la respuesta al frontend
         return jsonify({
             "respuesta": respuesta_ia,
+            "tipo": tipo_respuesta,
             "estado": "exito"
         })
 
     except Exception as e:
+        print(f"Error en controller: {str(e)}")
         return jsonify({"error": str(e), "estado": "error"}), 500

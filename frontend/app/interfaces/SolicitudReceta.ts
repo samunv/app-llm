@@ -1,9 +1,12 @@
-import { Especificaciones } from './Especificaciones';
+import { Especificaciones } from "./Especificaciones";
+import { PerfilUsuario } from "./PerfilUsuario";
 
 export interface SolicitudReceta {
-    comida?: string,
-    tipoImagen?: string, //png o jpeg
-    imagen?: string, // debe codificarse en Base64 
-    especificaciones?: Especificaciones | undefined,
-    modeloIASeleccionado?: string
+  comida: string;
+  modeloIASeleccionado: string;
+  imagen?: string;
+  tipoImagen?: string;
+  especificaciones?: Especificaciones;
+  historial?: Array<{ role: string; parts: { text: string }[] }>; // <--- NUEVO CAMPO
+  perfilUsuario?: PerfilUsuario;
 }

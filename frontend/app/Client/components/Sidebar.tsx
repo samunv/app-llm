@@ -1,5 +1,5 @@
 import { Conversacion } from "@/app/interfaces/Conversacion";
-import { FaPlus, FaTrash, FaMessage, FaBars, FaXmark } from "react-icons/fa6";
+import { FaPlus, FaTrash, FaMessage, FaBars, FaXmark, FaGear } from "react-icons/fa6";
 import { IoSparkles } from "react-icons/io5";
 
 type Props = {
@@ -9,6 +9,7 @@ type Props = {
   cargarConversacion: (conv: Conversacion) => void;
   borrarConversacion: (id: string, e: React.MouseEvent) => void;
   nuevaConversacion: () => void;
+  abrirAjustes: () => void; // <--- NUEVA PROP
 };
 
 export default function Sidebar({
@@ -18,6 +19,7 @@ export default function Sidebar({
   cargarConversacion,
   borrarConversacion,
   nuevaConversacion,
+  abrirAjustes, // <--- Recibimos la función
 }: Props) {
   return (
     <>
@@ -108,12 +110,15 @@ export default function Sidebar({
           </div>
         </div>
 
-        {/* Footer Sidebar */}
-        <div className="p-5 border-t border-gray-100 bg-gray-50/50">
-          <div className="flex items-center gap-2 text-xs text-gray-500 font-medium">
-            <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-            <span>Sistema Operativo</span>
-          </div>
+        {/* Footer Sidebar - BOTÓN DE AJUSTES AÑADIDO */}
+        <div className="p-4 border-t border-gray-100 bg-gray-50/50">
+          <button
+            onClick={abrirAjustes}
+            className="w-full flex items-center gap-3 p-2 text-sm text-gray-600 hover:text-[#E67E22] hover:bg-white rounded-lg transition-all font-medium group"
+          >
+            <FaGear className="group-hover:rotate-90 transition-transform duration-500" />
+            <span>Configuración y Alérgenos</span>
+          </button>
         </div>
       </div>
 
@@ -126,4 +131,4 @@ export default function Sidebar({
       )}
     </>
   );
-}   
+}
