@@ -18,6 +18,7 @@ import { Modelo } from "../interfaces/Modelo";
 import { enviarReceta } from "@/Server/Server";
 import { SolicitudReceta } from "../interfaces/SolicitudReceta";
 import remarkGfm from "remark-gfm";
+import TypingText from "./components/TypingText";
 
 export default function Inicio() {
   const [comidas, setComidas] = useState<Comida[]>([]);
@@ -51,6 +52,7 @@ export default function Inicio() {
         const data = await enviarReceta(solicitudReceta);
         if (data.estado === "exito") {
           setRespuestaIA(data.respuesta);
+          updateSolicitudRecetaCallback("comida", "");
         } else {
           setRespuestaIA("Hubo un error al generar la receta.");
         }
@@ -193,14 +195,16 @@ export default function Inicio() {
         </svg>
       </div>
 
-      {!respuestaIA && (
+      {!respuestaIA && !cargando && (
         <h1 className="text-[#343A40] text-3xl text-center font-medium">
-          ¡Hola! soy tu chef de recetas,
+          ¡Hola! soy tu chef y hago recetas
+          <TypingText frases={[" rápidas.", " creativas.", " personalizadas."]} />
+ 
         </h1>
       )}
 
       {respuestaIA && (
-        <div className="w-[700px] bg-white p-8 rounded-3xl shadow-xl border border-[#E67E22]/20 animate-fadeIn mb-10">
+        <div className="w-[700px] bg-white p-8 rounded-3xl shadow-xl border-2 border-[#DCD3D0] animate-fadeIn mb-10">
           <div className="flex items-center gap-3 mb-6 border-b border-gray-100 pb-4">
             <div className="bg-orange-100 p-2 rounded-full text-[#E67E22]">
               <svg
@@ -231,7 +235,13 @@ export default function Inicio() {
       )}
 
       {/* BARRA DE ENTRADA PRINCIPAL */}
-      <div className="bg-[#FDFBF5] text-[#343A40] p-3 border-2 border-[#8D6E63]/30 rounded-2xl flex flex-row items-center w-[700px] gap-3 shadow-lg focus-within:border-[#E67E22] focus-within:ring-2 focus-within:ring-[#E67E22]/30 transition-all duration-300 min-h-[65px] z-20" >
+      <div
+        className={
+          respuestaIA
+            ? "fixed bottom-5 left-1/2 transform -translate-x-1/2 bg-white text-[#343A40] p-3 border-2 border-[#8D6E63]/30 rounded-2xl flex flex-row items-center w-[750px] gap-3 shadow-lg z-50 focus-within:border-[#E67E22] focus-within:ring-2 focus-within:ring-[#E67E22]/30 min-h-[65px] z-20"
+            : "bg-[white] text-[#343A40] p-3 border-2 border-[#8D6E63]/30 rounded-2xl flex flex-row items-center w-[750px] gap-3 shadow-lg focus-within:border-[#E67E22] focus-within:ring-2 focus-within:ring-[#E67E22]/30  min-h-[65px] z-20"
+        }
+      >
         {/* Dropdown de Modelos */}
         <div className="relative" ref={dropdownRef}>
           <button
@@ -265,8 +275,12 @@ export default function Inicio() {
           </button>
 
           {isOpen && (
-            <div className="absolute top-full left-0 mt-2 w-[420px] max-h-[250px] overflow-y-auto bg-white rounded-2xl shadow-2xl border-2 border-[#E67E22]/20 z-50 animate-fadeIn">
-              {/* ... (Contenido del dropdown igual que antes) ... */}
+            <div
+              className={`absolute left-0 w-[420px] max-h-[220px] overflow-y-auto bg-white rounded-2xl shadow-2xl border-2 border-2 border-[#DCD3D0] z-50 animate-fadeIn
+              ${respuestaIA ? "bottom-full mb-2" : "top-full mt-1"}
+              `}
+            >
+              {" "}
               <div className="p-3">
                 {modelosGemini.map((modelo) => {
                   const velocidadConfig = getVelocidadConfig(modelo.velocidad);
@@ -377,7 +391,7 @@ export default function Inicio() {
         </button>
       </div>
 
-      {/* BOTÓN ESPECIFICACIONES */}
+       {/* BOTÓN ESPECIFICACIONES */}
       <BotonGeneral
         texto="Añadir especificaciones"
         onClick={() => setMostrarFormEspecificaciones(true)}

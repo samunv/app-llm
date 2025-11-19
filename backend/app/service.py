@@ -33,13 +33,16 @@ def obtenerPrompt(datos_solicitud: SolicitudReceta):
 
     return f"""
 Eres ChefGPT. RESPONDE **SOLO** con la receta en formato Markdown, sin ningún texto adicional. 
-No agregues saludos, confirmaciones ni explicaciones.
+No agregues saludos, confirmaciones ni explicaciones. Si la comida no inluye nada que tenga que ver con comida, imprimirás un error.
 
 ## INFORMACIÓN DEL USUARIO
-Comida: "{comida}"
+Prompt: "{comida}"
 Tipo de dieta: {tipo_dieta}
 Objetivo: {objetivo}
 Restricciones: {restricciones}
+En caso de que exista imagen, si identificas comida en ella, harás una receta solo si el prompt lo pide. Si el prompt pide otra cosa, prevalecerá la comida del prompt(recuerda, siemore que tenga que ver con comida).
+Si no identificas comida en la imagen, y el prompt tiene comida, harás caso al prompt. Si ninguna es comida, devolverás un error.
+
 
 ## FORMATO OBLIGATORIO (Markdown)
 # Título del plato
