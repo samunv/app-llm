@@ -2,7 +2,13 @@
 
 import { useEffect, useState, useRef, JSX, useCallback } from "react";
 import { Comida } from "../interfaces/Comida";
-import { FaPaperPlane, FaChevronDown, FaCheck, FaXmark } from "react-icons/fa6";
+import {
+  FaPaperPlane,
+  FaChevronDown,
+  FaCheck,
+  FaXmark,
+  FaFilePdf,
+} from "react-icons/fa6";
 import { SiGoogle } from "react-icons/si";
 import { FaRobot, FaBolt, FaRocket, FaImage } from "react-icons/fa";
 import { IoIosAddCircle } from "react-icons/io";
@@ -20,6 +26,7 @@ import { SolicitudReceta } from "../interfaces/SolicitudReceta";
 import remarkGfm from "remark-gfm";
 import TypingText from "./components/TypingText";
 import { Receta } from "../interfaces/Receta";
+import GeneradorPDF from "./components/GeneradorPDF";
 
 export default function Inicio() {
   const [comidas, setComidas] = useState<Comida[]>([]);
@@ -210,60 +217,61 @@ export default function Inicio() {
       {respuestaIA && (
         <div className="w-[700px] bg-white p-8 rounded-3xl shadow-xl border-2 border-[#DCD3D0] animate-fadeIn mb-10">
           <div className="flex items-center gap-3 pb-4">
-            
             <div className="flex flex-row items-center gap-2">
               <div
-                        className="p-2.5 rounded-lg flex-shrink-0 shadow-sm"
-                        style={{
-                          backgroundColor: `${modeloSeleccionado.color}15`,
-                          color: modeloSeleccionado.color,
-                        }}
-                      >
-                        {modeloSeleccionado.icono}
-                      </div>
-                      <h2 className="font-bold text-[#343A40]">{modeloSeleccionado.nombre}</h2>
+                className="p-2.5 rounded-lg flex-shrink-0 shadow-sm"
+                style={{
+                  backgroundColor: `${modeloSeleccionado.color}15`,
+                  color: modeloSeleccionado.color,
+                }}
+              >
+                {modeloSeleccionado.icono}
+              </div>
+              <h2 className="font-bold text-[#343A40]">
+                {modeloSeleccionado.nombre}
+              </h2>
             </div>
-            
           </div>
 
           <div className="prose prose-orange max-w-none text-[#343A40]  leading-relaxed">
             <p>{respuestaIA}</p>
             {receta && receta.nombrePlato ? (
               <div>
-                <h1 className="font-bold text-3xl">{receta.nombrePlato}</h1>
-                <hr className="mt-3 mb-3 border border-[#DCD3D0]"/>
-                <h2 className="font-bold text-2xl">Ingredientes</h2>
-                <ul>
-                  {receta.ingredientes?.map((ingrediente, index) => (
-                    <li key={index}>{ingrediente}</li>
-                  ))}
-                </ul>
+                <div id="respuesta-receta" className="mb-5">
+                  <h1 className="font-bold text-3xl">{receta.nombrePlato}</h1>
+                  <hr className="mt-3 mb-3 border border-[#DCD3D0]" />
+                  <h2 className="font-bold text-2xl">Ingredientes</h2>
+                  <ul>
+                    {receta.ingredientes?.map((ingrediente, index) => (
+                      <li key={index}>{ingrediente}</li>
+                    ))}
+                  </ul>
 
-                <hr className="mt-3 mb-3 border border-[#DCD3D0]"/>
-                <h2 className="font-bold text-2xl">Pasos</h2>
-                <ul>
-                  {receta.pasos?.map((paso, index) => (
-                    <li key={index}>
-                      {index + 1 + ")"} {paso}
-                    </li>
-                  ))}
-                </ul>
+                  <hr className="mt-3 mb-3 border border-[#DCD3D0]" />
+                  <h2 className="font-bold text-2xl">Pasos</h2>
+                  <ul>
+                    {receta.pasos?.map((paso, index) => (
+                      <li key={index}>
+                        {index + 1 + ")"} {paso}
+                      </li>
+                    ))}
+                  </ul>
 
-                
-
-                {receta.especificaciones ? (
-                  <>
-                  <hr className="mt-3 mb-3 border border-[#DCD3D0]"/>
-                    <h2 className="font-bold text-2xl">Especificaciones</h2>
-                    <p>
-                      {receta.especificaciones}
-                    </p>
-                  </>
-                ) : (
-                  ""
-                )}
+                  {receta.especificaciones ? (
+                    <>
+                      <hr className="mt-3 mb-3 border border-[#DCD3D0]" />
+                      <h2 className="font-bold text-2xl">Especificaciones</h2>
+                      <p>{receta.especificaciones}</p>
+                    </>
+                  ) : (
+                    ""
+                  )}
+                </div>
+                <GeneradorPDF htmlElement="respuesta-receta" />
               </div>
-            ): "Error al generar receta. Solo puedo realizar recetas de comida. Prueba a pedir una receta válida o prueba a cambiar de modelo."}
+            ) : (
+              "Error al generar receta. Solo puedo realizar recetas de comida. Prueba a pedir una receta válida o prueba a cambiar de modelo."
+            )}
           </div>
         </div>
       )}
@@ -363,13 +371,12 @@ export default function Inicio() {
           type="file"
           ref={inputFileRef}
           hidden
-          accept="image/png, image/jpeg"
           onChange={handleFileChange}
         />
 
         <input
           type="text"
-          placeholder="¿Qué vamos a preparar hoy? (Ej: Paella valenciana)"
+          placeholder="¿Qué vamos a preparar hoy?"
           className="placeholder:text-[#8D6E63]/60 flex-1 outline-none text-base bg-transparent px-2"
           value={solicitudReceta?.comida ?? ""}
           onChange={(e) =>
@@ -377,6 +384,9 @@ export default function Inicio() {
           }
           onKeyDown={(e) => e.key === "Enter" && handleEnviarReceta()}
         />
+        <BotonGeneral texto="" onClick={() => {}}>
+          <FaFilePdf size={20} />
+        </BotonGeneral>
         <BotonGeneral
           texto=""
           onClick={() => setMostrarFormEspecificaciones(true)}
