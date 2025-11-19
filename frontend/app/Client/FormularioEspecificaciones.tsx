@@ -7,7 +7,6 @@ import { IoSparkles } from "react-icons/io5";
 import { useSolicitudReceta } from "../contexts/SolicitudRecetaContext";
 import { Especificaciones } from "../interfaces/Especificaciones";
 import BotonGeneral from "./components/BotonGeneral";
-import { Especificaciones } from './../interfaces/Especificaciones';
 
 type Props = {
   cerrar: () => void;
