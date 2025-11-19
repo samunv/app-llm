@@ -1,8 +1,9 @@
+import { Receta } from "@/app/interfaces/Receta";
 import { SolicitudReceta } from "@/app/interfaces/SolicitudReceta";
 
 export const enviarReceta = async (
   solicitudReceta: SolicitudReceta
-): Promise<{respuesta: string, estado: string}> => {
+): Promise<{respuesta: Receta, estado: string}> => {
   if (!solicitudReceta?.comida || solicitudReceta.comida.trim() === "") {
     throw new Error("El campo 'comida' es obligatorio");
   }

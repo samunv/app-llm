@@ -29,6 +29,9 @@ def procesar_solicitud():
         # Log por si hay errores
         print(respuesta_ia)
 
+        if hasattr(respuesta_ia, "to_dict"):
+            respuesta_ia = respuesta_ia.to_dict()
+
         # Devolvemos la respuesta al frontend
         return jsonify({
             "respuesta": respuesta_ia,

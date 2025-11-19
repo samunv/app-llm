@@ -36,9 +36,8 @@ export default function TypingText({ frases, speed = 100 }: Props) {
   }, [charIndex, index, frases, speed]);
 
   return (
-    <span className="bg-gradient-to-r from-orange-500 to-yellow-300 bg-clip-text text-transparent">
+    <span className="font-bold bg-gradient-to-r from-orange-500 to-yellow-300 bg-clip-text text-transparent">
       {text}
-      <span className="animate-pulse">|</span>
     </span>
   );
 }
