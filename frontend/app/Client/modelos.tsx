@@ -1,5 +1,4 @@
 import { FaBolt, FaRocket } from "react-icons/fa6";
-import { SiGoogle } from "react-icons/si";
 import { Modelo } from "../interfaces/Modelo";
 
 export const modelosGemini: Modelo[] = [
@@ -21,14 +20,5 @@ export const modelosGemini: Modelo[] = [
     velocidad: "equilibrado",
     icono: <FaBolt className="text-xl" />,
     color: "#FBBC04",
-  },
-  {
-    id: "gemini-1.5-flash",
-    nombre: "Gemini 1.5 Flash",
-    version: "Profesional",
-    descripcion: "Potente aunque no admite imagenes.",
-    velocidad: "potente",
-    icono: <SiGoogle className="text-xl" />,
-    color: "#4285F4",
   },
 ];

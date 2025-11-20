@@ -19,7 +19,6 @@ def procesar_solicitud():
             tipoImagen=datos.get('tipoImagen',''),
             especificaciones=especificacionesObj or Especificaciones(),
             historial=datos.get('historial', []),
-            perfilUsuario=datos.get('perfilUsuario', {}) # <--- Capturamos el perfil
         )
 
         # Llamamos al servicio

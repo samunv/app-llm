@@ -29,7 +29,6 @@ import Sidebar from "./components/Sidebar";
 import { useHistorial } from "../hooks/useHistorial";
 import { Conversacion } from "../interfaces/Conversacion";
 import ModalConfiguracion from "./components/ModalConfiguracion";
-import { usePerfil } from "../hooks/usePerfil";
 
 interface MensajeChat {
   id: string;
@@ -46,7 +45,6 @@ export default function Inicio() {
   // Hooks
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const { historial, guardarConversacion, borrarConversacion } = useHistorial();
-  const { perfil, guardarPerfil, modalAbierto, setModalAbierto } = usePerfil();
 
   // Estados UI
   const [isOpen, setIsOpen] = useState(false);
@@ -108,8 +106,8 @@ export default function Inicio() {
         };
       });
 
-      // 3. Payload
-      const payload = {
+      // 3. Playload
+      const playload = {
         ...solicitudReceta,
         comida: textoInput || "",
         historial: historialBackend,
@@ -117,11 +115,10 @@ export default function Inicio() {
           solicitudReceta?.modeloIASeleccionado || "gemini-2.5-flash",
         imagen: solicitudReceta?.imagen || "",
         tipoImagen: solicitudReceta?.tipoImagen || "",
-        perfilUsuario: perfil,
       };
 
       // 4. Petición
-      const data = await enviarReceta(payload);
+      const data = await enviarReceta(playload);
 
       if (data.estado === "exito") {
         const msgIA: MensajeChat = {
@@ -249,20 +246,20 @@ export default function Inicio() {
     setIsOpen(false);
   };
 
-  const getVelocidadConfig = (velocidad: string) => {
-    switch (velocidad) {
-      case "ultrarrápido":
-        return { color: "text-green-600", emoji: "⚡⚡", bg: "bg-green-50" };
-      case "rápido":
-        return { color: "text-emerald-600", emoji: "⚡", bg: "bg-emerald-50" };
-      case "equilibrado":
-        return { color: "text-blue-600", emoji: "⚖️", bg: "bg-blue-50" };
-      case "potente":
-        return { color: "text-purple-600", emoji: "🔥", bg: "bg-purple-50" };
-      default:
-        return { color: "text-gray-600", emoji: "⭐", bg: "bg-gray-50" };
-    }
-  };
+  // const getVelocidadConfig = (velocidad: string) => {
+  //   switch (velocidad) {
+  //     case "ultrarrápido":
+  //       return { color: "text-green-600", emoji: "⚡⚡", bg: "bg-green-50" };
+  //     case "rápido":
+  //       return { color: "text-emerald-600", emoji: "⚡", bg: "bg-emerald-50" };
+  //     case "equilibrado":
+  //       return { color: "text-blue-600", emoji: "⚖️", bg: "bg-blue-50" };
+  //     case "potente":
+  //       return { color: "text-purple-600", emoji: "🔥", bg: "bg-purple-50" };
+  //     default:
+  //       return { color: "text-gray-600", emoji: "⭐", bg: "bg-gray-50" };
+  //   }
+  // };
 
   useEffect(() => {
     if (modeloSeleccionado) {
@@ -282,7 +279,6 @@ export default function Inicio() {
         cargarConversacion={cargarConversacionDesdeHistorial}
         borrarConversacion={borrarConversacion}
         nuevaConversacion={handleNuevaConversacion}
-        abrirAjustes={() => setModalAbierto(true)}
       />
 
       <main
@@ -346,40 +342,39 @@ export default function Inicio() {
                 <div
                   className={`max-w-[85%] p-5 rounded-2xl shadow-sm text-base leading-relaxed ${
                     msg.rol === "usuario"
-                      ? "bg-[#F0F4F9] text-[#1F1F1F] rounded-br-sm"
-                      : "bg-white border border-[#E6E6E6] text-[#343A40] rounded-bl-sm"
+                      ? "bg-white border border-gray-300 text-[#1F1F1F] rounded-br-sm"
+                      : "bg-white border border-gray-300 text-[#343A40] rounded-bl-sm"
                   }`}
                 >
                   {msg.rol === "ia" && (
-                    <div className="flex items-center gap-2 mb-2 font-bold text-[#E67E22]">
-                      <FaRobot /> ChefGPT
+                    <div className="flex items-center gap-1 mb-2 font-bold text-[#E67E22]">
+                      <svg
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        width={20}
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          d="M7 5C4.23858 5 2 7.23858 2 10C2 12.0503 3.2341 13.8124 5 14.584V17.25H19L19 14.584C20.7659 13.8124 22 12.0503 22 10C22 7.23858 19.7614 5 17 5C16.7495 5 16.5033 5.01842 16.2626 5.05399C15.6604 3.27806 13.9794 2 12 2C10.0206 2 8.33961 3.27806 7.73736 5.05399C7.49673 5.01842 7.25052 5 7 5Z"
+                          className="fill-orange-500"
+                        ></path>
+                        <path
+                          d="M18.9983 18.75H5.00169C5.01188 20.1469 5.08343 20.9119 5.58579 21.4142C6.17157 22 7.11438 22 9 22H15C16.8856 22 17.8284 22 18.4142 21.4142C18.9166 20.9119 18.9881 20.1469 18.9983 18.75Z"
+                          className="fill-orange-500"
+                        ></path>
+                      </svg>{" "}
+                      ChefGPT
                     </div>
                   )}
-                  <p className="whitespace-pre-wrap">{msg.contenido as string}</p>
+                  <p className="whitespace-pre-wrap">
+                    {msg.contenido as string}
+                  </p>
                 </div>
               )}
 
               {/* RECETA (Diseño Original Restaurado) */}
               {msg.tipo === "receta" && (
-                <div className="w-full bg-white p-10 rounded-3xl shadow-xl border-2 border-[#DCD3D0]">
-                  {/* Cabecera Modelo */}
-                  <div className="flex items-center gap-3 pb-4 mb-2">
-                    <div className="flex flex-row items-center gap-2">
-                      <div
-                        className="p-2.5 rounded-lg flex-shrink-0 shadow-sm"
-                        style={{
-                          backgroundColor: `${modeloSeleccionado.color}15`,
-                          color: modeloSeleccionado.color,
-                        }}
-                      >
-                        {modeloSeleccionado.icono}
-                      </div>
-                      <h2 className="font-bold text-[#343A40]">
-                        {modeloSeleccionado.nombre}
-                      </h2>
-                    </div>
-                  </div>
-
+                <div className="w-full bg-white p-10 rounded-3xl shadow-xl border border-gray-300">
                   {/* Contenido Receta (Estilo Original) */}
                   {(() => {
                     const r = msg.contenido as Receta;
@@ -389,9 +384,9 @@ export default function Inicio() {
                           <h1 className="font-bold text-3xl text-[#343A40]">
                             {r.nombrePlato}
                           </h1>
-                          
+
                           <hr className="mt-4 mb-4 border border-[#DCD3D0]" />
-                          
+
                           <h2 className="font-bold text-2xl text-[#343A40]">
                             Ingredientes
                           </h2>
@@ -402,14 +397,17 @@ export default function Inicio() {
                           </ul>
 
                           <hr className="mt-4 mb-4 border border-[#DCD3D0]" />
-                          
+
                           <h2 className="font-bold text-2xl text-[#343A40]">
                             Pasos
                           </h2>
                           <ul className="space-y-2">
                             {r.pasos?.map((paso, index) => (
                               <li key={index} className="list-none">
-                                <span className="font-bold mr-1">{index + 1})</span> {paso}
+                                <span className="font-bold mr-1">
+                                  {index + 1})
+                                </span>{" "}
+                                {paso}
                               </li>
                             ))}
                           </ul>
@@ -424,7 +422,7 @@ export default function Inicio() {
                             </>
                           )}
                         </div>
-                        
+
                         {/* Botón PDF Integrado */}
                         <GeneradorPDF htmlElement={`receta-${msg.id}`} />
                       </div>
@@ -435,22 +433,18 @@ export default function Inicio() {
             </div>
           ))}
 
-          {/* Loading */}
-          {cargando && (
-            <div className="flex justify-start w-full animate-pulse">
-              <div className="bg-white p-4 rounded-2xl rounded-bl-none border border-gray-200 flex items-center gap-2 shadow-sm">
-                <div className="w-2 h-2 bg-orange-400 rounded-full animate-bounce"></div>
-                <div className="w-2 h-2 bg-orange-400 rounded-full animate-bounce delay-100"></div>
-                <div className="w-2 h-2 bg-orange-400 rounded-full animate-bounce delay-200"></div>
+          {
+            cargando && 
+              <div className="flex justify-start w-full">
+                <div className="loader"></div>
               </div>
-            </div>
-          )}
+          }
         </div>
 
         {/* BARRA FLOTANTE */}
         <div
           className={`
-            bg-white text-[#343A40] p-2 pr-3 pl-4 border-2 border-[#8D6E63]/30 rounded-2xl flex flex-row items-center gap-3 shadow-2xl shadow-orange-500/10 focus-within:border-[#E67E22] focus-within:ring-4 focus-within:ring-orange-500/10 transition-all duration-500 z-50
+            bg-white mt-7 text-[#343A40] p-2 pr-3 pl-4 border-1 border-gray-400 rounded-2xl flex flex-row items-center gap-3 shadow-2xl shadow-orange-500/10 focus-within:border-[#E67E22]  z-50
             ${
               chatLog.length > 0
                 ? `fixed bottom-8 w-[750px] ${
@@ -533,8 +527,6 @@ export default function Inicio() {
             )}
           </div>
 
-          <div className="w-px h-8 bg-gray-200 mx-1"></div>
-
           <input
             type="file"
             ref={inputFileRef}
@@ -557,29 +549,21 @@ export default function Inicio() {
             onKeyDown={(e) => e.key === "Enter" && handleEnviar()}
           />
 
-          <BotonGeneral texto="" onClick={() => {}}>
-            <FaFilePdf
-              size={20}
-              className="text-gray-400 hover:text-red-500 transition-colors"
-            />
-          </BotonGeneral>
-          <BotonGeneral
-            texto=""
-            onClick={() => setMostrarFormEspecificaciones(true)}
-          >
+          {chatLog.length == 0 && (
             <IoIosAddCircle
-              size={22}
-              className="text-gray-400 hover:text-[#E67E22] transition-colors"
+              size={25}
+              className="text-gray-400 hover:text-[#E67E22] transition-colors cursor-pointer"
+              onClick={() => setMostrarFormEspecificaciones(true)}
             />
-          </BotonGeneral>
+          )}
 
-          {modeloSeleccionado.id != "gemini-1.0-pro" && (
+          {chatLog.length == 0 && (
             <div>
               {imagenPreview ? (
                 <div className="relative group w-10 h-10">
                   <img
                     src={imagenPreview}
-                    className="w-full h-full object-cover rounded-lg border border-orange-200"
+                    className="w-full h-full object-cover rounded-lg border border-orange-200 cursor-pointer"
                   />
                   <button
                     onClick={(e) => {
@@ -595,10 +579,10 @@ export default function Inicio() {
               ) : (
                 <button
                   onClick={handleClickImagen}
-                  className="p-2 text-gray-400 hover:bg-gray-100 rounded-xl transition-colors"
+                  className="p-2 text-gray-400 hover:text-[#E67E22] rounded-xl transition-colors cursor-pointer"
                   title="Subir foto"
                 >
-                  <FaImage size={20} />
+                  <FaImage size={25} />
                 </button>
               )}
             </div>
@@ -623,13 +607,13 @@ export default function Inicio() {
         {mostrarFormEspecificaciones && (
           <FormularioEspecificaciones cerrar={cerrarFormulario} />
         )}
-        {modalAbierto && (
+        {/* {modalAbierto && (
           <ModalConfiguracion
             perfilActual={perfil}
             guardar={guardarPerfil}
             cerrar={() => setModalAbierto(false)}
           />
-        )}
+        )} */}
 
         {/* Estilos Animación */}
         <style jsx>{`
