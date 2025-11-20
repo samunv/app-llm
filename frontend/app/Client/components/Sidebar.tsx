@@ -9,7 +9,6 @@ type Props = {
   cargarConversacion: (conv: Conversacion) => void;
   borrarConversacion: (id: string, e: React.MouseEvent) => void;
   nuevaConversacion: () => void;
-  abrirAjustes: () => void; // <--- NUEVA PROP
 };
 
 export default function Sidebar({
@@ -19,7 +18,6 @@ export default function Sidebar({
   cargarConversacion,
   borrarConversacion,
   nuevaConversacion,
-  abrirAjustes, // <--- Recibimos la función
 }: Props) {
   return (
     <>
@@ -41,7 +39,7 @@ export default function Sidebar({
         {/* Cabecera Sidebar (Botón cerrar y Logo pequeño) */}
         <div className="p-5 flex items-center justify-between">
           <div className="flex items-center gap-2 font-bold text-lg tracking-tight">
-            <span className="text-[#E67E22]">Chef</span>GPT
+            <span className="text-[#E67E22]">ChefGPT</span>
             <span className="text-xs bg-orange-100 text-orange-600 px-2 py-0.5 rounded-full">
               Historial
             </span>
@@ -111,7 +109,7 @@ export default function Sidebar({
         </div>
 
         {/* Footer Sidebar - BOTÓN DE AJUSTES AÑADIDO */}
-        <div className="p-4 border-t border-gray-100 bg-gray-50/50">
+        {/* <div className="p-4 border-t border-gray-100 bg-gray-50/50">
           <button
             onClick={abrirAjustes}
             className="w-full flex items-center gap-3 p-2 text-sm text-gray-600 hover:text-[#E67E22] hover:bg-white rounded-lg transition-all font-medium group"
@@ -119,7 +117,7 @@ export default function Sidebar({
             <FaGear className="group-hover:rotate-90 transition-transform duration-500" />
             <span>Configuración y Alérgenos</span>
           </button>
-        </div>
+        </div> */}
       </div>
 
       {/* Overlay Móvil */}

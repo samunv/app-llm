@@ -59,25 +59,26 @@ def _modo_generar_receta(datos_solicitud, modelo_id):
 # --- MODO 2: CHAT CONTINUO ---
 def _modo_chat_continuo(datos_solicitud, modelo_id):
     contents = datos_solicitud.historial.copy()
-    
-    # Extraer datos del perfil para inyectarlos en el contexto
-    perfil = datos_solicitud.perfilUsuario or {}
-    contexto_perfil = ""
-    if perfil:
-        contexto_perfil = (
-            f"\n[SISTEMA: El usuario se llama {perfil.get('nombre', 'Usuario')}. "
-            f"Tiene estas alergias/restricciones: {perfil.get('alergias', 'Ninguna')}. "
-            f"Sigue esta dieta: {perfil.get('dietaGeneral', 'Ninguna')}. TENLO EN CUENTA.]\n"
-        )
-
-    # Añadimos la nueva pregunta del usuario CON el contexto del perfil
     mensaje_usuario = datos_solicitud.comida
+
+    system_instruction_text = (
+    "Eres ChefGPT, un asistente de cocina experto. "
+    "Solo puedes conversar sobre la receta ya existente, no puedes crear nuevas recetas. "
+    "Responde en texto plano, sin markdown, y solo sobre lo que se ha hablado anteriormente."
+    )
+
+    # Mensaje del usuario
     contents.append({
-        "role": "user",
-        "parts": [{"text": contexto_perfil + mensaje_usuario}]
+    "role": "user",
+    "parts": [{"text": mensaje_usuario}]
     })
 
-    payload = { "contents": contents }
+    payload = {
+    "systemInstruction": {
+        "parts": [{"text": system_instruction_text}]
+    },
+    "contents": contents
+}
 
     texto_respuesta = _llamar_api_gemini(payload, modelo_id)
     
@@ -89,12 +90,12 @@ def _modo_chat_continuo(datos_solicitud, modelo_id):
 def _llamar_api_gemini(payload, modelo_id):
     url = f"https://generativelanguage.googleapis.com/v1beta/models/{modelo_id}:generateContent?key={api_key}"
     headers = {'Content-Type': 'application/json'}
-    
+
     try:
         response = requests.post(url, headers=headers, data=json.dumps(payload))
         if response.status_code != 200:
             raise Exception(f"Error Google {response.status_code}: {response.text}")
-            
+
         resultado = response.json()
         return resultado['candidates'][0]['content']['parts'][0]['text'].strip()
     except Exception as e:
@@ -103,33 +104,23 @@ def _llamar_api_gemini(payload, modelo_id):
 def obtenerPromptReceta(datos_solicitud: SolicitudReceta):
     comida = datos_solicitud.comida or ''
     especificaciones = datos_solicitud.especificaciones or Especificaciones()
-    
-    # Datos del Perfil
-    perfil = datos_solicitud.perfilUsuario or {}
-    info_perfil = (
-        f"Nombre: {perfil.get('nombre', 'Usuario')}. "
-        f"Alergias: {perfil.get('alergias', 'Ninguna')}. "
-        f"Dieta: {perfil.get('dietaGeneral', 'Ninguna')}."
-    )
 
     return f"""
     Eres ChefGPT, un asistente de cocina experto.
-    
-    ## INFORMACIÓN CRÍTICA DEL USUARIO (RESPETAR SIEMPRE)
-    {info_perfil}
-    Si la receta pedida contiene alérgenos del usuario, ADVIERTE o SUSTITUYE ingredientes.
-    
+
     Responde **solo** con un JSON válido que represente una receta detallada.
     El formato debe ser EXACTAMENTE este JSON (sin markdown ```json ... ```):
     {{
         "nombrePlato": "Nombre del plato",
         "ingredientes": ["100g de x", "2 cucharadas de y"],
         "pasos": ["Paso 1...", "Paso 2..."],
-        "especificaciones": "Consejos extra, advertencias de alérgenos, calorías..."
+        "especificaciones": "Las indicadas por el usuario, si las hubiera"
     }}
 
     ## PETICIÓN DEL USUARIO
     Prompt: "{comida}"
+
+    ## ESPECIFICACIONES
     Tipo de dieta deseada: "{especificaciones.tipo_dieta}"
     Restricciones adicionales: "{especificaciones.restricciones}"
     Objetivo: "{especificaciones.objetivo}"
@@ -139,6 +130,5 @@ def estraerJSON(texto):
     inicio = texto.find("{")
     fin = texto.rfind("}") + 1
     if inicio == -1 or fin == -1:
-        # Si falla, a veces el modelo añade texto antes. Intentamos limpiar.
         raise Exception("No se encontró JSON en la respuesta")
     return texto[inicio:fin]
