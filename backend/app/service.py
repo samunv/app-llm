@@ -44,8 +44,11 @@ def _modo_generar_receta(datos_solicitud, modelo_id):
     texto_respuesta = _llamar_api_gemini(payload, modelo_id)
     
     try:
-        json_str = estraerJSON(texto_respuesta)
+        json_str = extraerJSON(texto_respuesta)
         json_receta = json.loads(json_str)
+
+        if "error" in json_receta:
+            return json_receta 
         return Receta(
             json_receta.get("nombrePlato"),
             json_receta.get("ingredientes"),
@@ -107,6 +110,8 @@ def obtenerPromptReceta(datos_solicitud: SolicitudReceta):
 
     return f"""
     Eres ChefGPT, un asistente de cocina experto.
+    Solo puedes responder a peticiones sobre comida o platos de comida, para hacer recetas sobre ellas.
+    Si el usuario pone otra cosa en el prompt, debes indicarle que solo puedes hacer recetas para comidas o platos de comida
 
     Responde **solo** con un JSON válido que represente una receta detallada.
     El formato debe ser EXACTAMENTE este JSON (sin markdown ```json ... ```):
@@ -115,6 +120,11 @@ def obtenerPromptReceta(datos_solicitud: SolicitudReceta):
         "ingredientes": ["100g de x", "2 cucharadas de y"],
         "pasos": ["Paso 1...", "Paso 2..."],
         "especificaciones": "Las indicadas por el usuario, si las hubiera"
+    }}
+
+    Si el prompt no contiene comida podrás devolver:
+    {{
+        "error": "Lo siento, ChefGPT solo puede hacer recetas de comida o platos de comidas"
     }}
 
     ## PETICIÓN DEL USUARIO
@@ -126,7 +136,7 @@ def obtenerPromptReceta(datos_solicitud: SolicitudReceta):
     Objetivo: "{especificaciones.objetivo}"
     """
 
-def estraerJSON(texto):
+def extraerJSON(texto):
     inicio = texto.find("{")
     fin = texto.rfind("}") + 1
     if inicio == -1 or fin == -1:
