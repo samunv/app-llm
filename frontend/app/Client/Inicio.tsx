@@ -29,13 +29,7 @@ import Sidebar from "./components/Sidebar";
 import { useHistorial } from "../hooks/useHistorial";
 import { Conversacion } from "../interfaces/Conversacion";
 import ModalConfiguracion from "./components/ModalConfiguracion";
-
-interface MensajeChat {
-  id: string;
-  rol: "usuario" | "ia";
-  tipo: "texto" | "receta";
-  contenido: string | Receta;
-}
+import { MensajeChat } from "../interfaces/MensajeChat";
 
 export default function Inicio() {
   // Contextos
@@ -367,8 +361,12 @@ export default function Inicio() {
                     </div>
                   )}
                   <p className="whitespace-pre-wrap">
-                    {msg.contenido as string}
-                  </p>
+  {/* Verificamos si el contenido es un objeto antes de renderizar */}
+  {typeof msg.contenido === 'string' 
+    ? msg.contenido 
+    : msg.contenido.error
+  }
+</p>
                 </div>
               )}
 
@@ -430,15 +428,16 @@ export default function Inicio() {
                   })()}
                 </div>
               )}
+
+             
             </div>
           ))}
 
-          {
-            cargando && 
-              <div className="flex justify-start w-full">
-                <div className="loader"></div>
-              </div>
-          }
+          {cargando && (
+            <div className="flex justify-start w-full">
+              <div className="loader"></div>
+            </div>
+          )}
         </div>
 
         {/* BARRA FLOTANTE */}
@@ -532,6 +531,7 @@ export default function Inicio() {
             ref={inputFileRef}
             hidden
             onChange={handleFileChange}
+            accept="image/png, image/jpeg"
           />
 
           <input
@@ -593,7 +593,7 @@ export default function Inicio() {
             disabled={
               cargando || (!solicitudReceta?.comida && !solicitudReceta?.imagen)
             }
-            className={`bg-[#E67E22] hover:bg-[#D35400] text-white p-3 rounded-xl transition-all shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center`}
+            className={`bg-[#E67E22] hover:bg-[#D35400] text-white p-3 rounded-xl transition-all shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center cursor-pointer`}
           >
             {cargando ? (
               <div className="w-[18px] h-[18px] border-2 border-white border-t-transparent rounded-full animate-spin"></div>

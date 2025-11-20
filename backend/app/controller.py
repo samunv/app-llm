@@ -28,6 +28,9 @@ def procesar_solicitud():
         if hasattr(respuesta_ia, "to_dict"):
             respuesta_ia = respuesta_ia.to_dict()
             tipo_respuesta = "receta"
+        elif isinstance(respuesta_ia, dict) and "error" in respuesta_ia:
+            # Caso de error {"error": "..."}
+            tipo_respuesta = "error"
         else:
             tipo_respuesta = "chat"
 

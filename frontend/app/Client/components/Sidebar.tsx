@@ -33,7 +33,7 @@ export default function Sidebar({
 
       {/* CONTENEDOR DEL SIDEBAR */}
       <div
-        className={`fixed inset-y-0 left-0 z-40 w-[300px] bg-white/95 backdrop-blur-md text-[#343A40] transform transition-transform duration-300 ease-in-out shadow-2xl border-r border-orange-100 flex flex-col
+        className={`fixed inset-y-0 left-0 z-40 w-[300px] bg-white/95 backdrop-blur-md text-[#343A40] transform transition-transform duration-300 ease-in-out shadow-2xl border-r border-gray-400 flex flex-col
         ${isOpen ? "translate-x-0" : "-translate-x-full"}`}
       >
         {/* Cabecera Sidebar (Botón cerrar y Logo pequeño) */}
@@ -59,7 +59,7 @@ export default function Sidebar({
               nuevaConversacion();
               if (window.innerWidth < 768) toggleSidebar();
             }}
-            className="w-full flex items-center justify-center gap-2 px-4 py-3.5 bg-gradient-to-r from-[#E67E22] to-[#D35400] hover:from-[#D35400] hover:to-[#C0392B] text-white rounded-xl transition-all shadow-lg shadow-orange-500/20 hover:shadow-orange-500/40 active:scale-95 font-semibold text-sm"
+            className="w-full flex items-center justify-center gap-2 px-4 py-3.5 bg-gradient-to-r from-[#E67E22] to-[#D35400] hover:from-[#D35400] hover:to-[#C0392B] text-white rounded-xl transition-all hover:shadow-orange-500/40 active:scale-95 font-semibold text-sm cursor-pointer"
           >
             <FaPlus />
             Nueva receta
