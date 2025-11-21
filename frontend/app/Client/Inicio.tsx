@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef, useCallback } from "react";
+import { useEffect, useState, useRef, useCallback, useMemo } from "react";
 import {
   FaPaperPlane,
   FaChevronDown,
@@ -9,14 +9,12 @@ import {
   FaImage,
   FaUser,
 } from "react-icons/fa6";
-import { FaRobot } from "react-icons/fa";
 import { IoIosAddCircle } from "react-icons/io";
 
 import "./Inicio.css";
 import { useSolicitudReceta } from "../contexts/SolicitudRecetaContext";
 import { useEspecificaciones } from "../contexts/EspecificacionesContext";
 import FormularioEspecificaciones from "./FormularioEspecificaciones";
-import BotonGeneral from "./components/BotonGeneral";
 import { modelosGemini } from "./modelos";
 import { Modelo } from "../interfaces/Modelo";
 import { enviarReceta } from "@/Server/Server";
@@ -24,11 +22,9 @@ import TypingText from "./components/TypingText";
 import { Receta } from "../interfaces/Receta";
 import GeneradorPDF from "./components/GeneradorPDF";
 
-// --- IMPORTS ---
 import Sidebar from "./components/Sidebar";
 import { useHistorial } from "../hooks/useHistorial";
 import { Conversacion } from "../interfaces/Conversacion";
-import ModalConfiguracion from "./components/ModalConfiguracion";
 import { MensajeChat } from "../interfaces/MensajeChat";
 
 export default function Inicio() {
@@ -51,11 +47,17 @@ export default function Inicio() {
 
   // Estados Chat
   const [chatLog, setChatLog] = useState<MensajeChat[]>([]);
-  const [cargando, setCargando] = useState(false);
+  const [cargando, setCargando] = useState<boolean>(false);
 
   // Refs
   const dropdownRef = useRef<HTMLDivElement>(null);
   const inputFileRef = useRef<HTMLInputElement>(null);
+
+  const contadorMensajesUsuario = useMemo(() => {
+    // Filtramos solo los mensajes del usuario
+    const mensajesUsuario = chatLog.filter((msg) => msg.rol === "usuario");
+    return mensajesUsuario.length;
+  }, [chatLog]);
 
   // Scroll automático
   useEffect(() => {
@@ -361,12 +363,8 @@ export default function Inicio() {
                     </div>
                   )}
                   <p className="whitespace-pre-wrap">
-  {/* Verificamos si el contenido es un objeto antes de renderizar */}
-  {typeof msg.contenido === 'string' 
-    ? msg.contenido 
-    : msg.contenido.error
-  }
-</p>
+                    {typeof msg.contenido === "string" ? msg.contenido : ""}
+                  </p>
                 </div>
               )}
 
@@ -428,8 +426,6 @@ export default function Inicio() {
                   })()}
                 </div>
               )}
-
-             
             </div>
           ))}
 
@@ -440,9 +436,10 @@ export default function Inicio() {
           )}
         </div>
 
-        {/* BARRA FLOTANTE */}
-        <div
-          className={`
+        {/* BARRA FLOTANTE: Solo aparecerá hasta que haya 3 mensajes en total del usuario, después se quitará por límite de conversación.*/}
+        {contadorMensajesUsuario <= 3 ? (
+          <div
+            className={`
             bg-white mt-7 text-[#343A40] p-2 pr-3 pl-4 border-1 border-gray-400 rounded-2xl flex flex-row items-center gap-3 shadow-2xl shadow-orange-500/10 focus-within:border-[#E67E22]  z-50
             ${
               chatLog.length > 0
@@ -452,156 +449,164 @@ export default function Inicio() {
                 : "w-[750px] min-h-[70px]"
             }
           `}
-        >
-          {/* Dropdown */}
-          <div className="relative" ref={dropdownRef}>
-            <button
-              onClick={() => setIsOpen(!isOpen)}
-              className="flex items-center gap-2.5 px-3 py-2 bg-gradient-to-r from-[#E67E22] to-[#D35400] hover:from-[#D35400] hover:to-[#C0392B] text-white rounded-xl transition-all duration-300 shadow-md hover:shadow-lg border border-[#8D6E63]/10 min-w-[180px] group relative"
-            >
-              {modeloSeleccionado.recomendado && (
-                <div className="absolute -top-1 -right-1 bg-yellow-400 text-[white] text-[9px] font-bold px-1.5 py-0.5 rounded-full shadow-sm">
-                  Recomendado
-                </div>
-              )}
-              <div
-                className="p-1.5 bg-white/20 rounded-lg backdrop-blur-sm flex-shrink-0"
-                style={{ color: modeloSeleccionado.color }}
+          >
+            {/* Dropdown */}
+            <div className="relative" ref={dropdownRef}>
+              <button
+                onClick={() => setIsOpen(!isOpen)}
+                className="flex items-center gap-2.5 px-3 py-2 bg-gradient-to-r from-[#E67E22] to-[#D35400] hover:from-[#D35400] hover:to-[#C0392B] text-white rounded-xl transition-all duration-300 shadow-md hover:shadow-lg border border-[#8D6E63]/10 min-w-[180px] group relative"
               >
-                {modeloSeleccionado.icono}
-              </div>
-              <div className="flex-1 text-left min-w-0 hidden sm:block">
-                <div className="text-xs font-bold leading-tight truncate">
-                  {modeloSeleccionado.nombre}
+                {modeloSeleccionado.recomendado && (
+                  <div className="absolute -top-1 -right-1 bg-yellow-400 text-[white] text-[9px] font-bold px-1.5 py-0.5 rounded-full shadow-sm">
+                    Recomendado
+                  </div>
+                )}
+                <div
+                  className="p-1.5 bg-white/20 rounded-lg backdrop-blur-sm flex-shrink-0"
+                  style={{ color: modeloSeleccionado.color }}
+                >
+                  {modeloSeleccionado.icono}
                 </div>
-                <div className="text-[10px] opacity-90 leading-tight truncate">
-                  {modeloSeleccionado.version}
+                <div className="flex-1 text-left min-w-0 hidden sm:block">
+                  <div className="text-xs font-bold leading-tight truncate">
+                    {modeloSeleccionado.nombre}
+                  </div>
+                  <div className="text-[10px] opacity-90 leading-tight truncate">
+                    {modeloSeleccionado.version}
+                  </div>
                 </div>
-              </div>
-              <FaChevronDown
-                className={`text-xs transition-transform duration-300 flex-shrink-0 ${
-                  isOpen ? "rotate-180" : ""
-                }`}
-              />
-            </button>
+                <FaChevronDown
+                  className={`text-xs transition-transform duration-300 flex-shrink-0 ${
+                    isOpen ? "rotate-180" : ""
+                  }`}
+                />
+              </button>
 
-            {isOpen && (
-              <div
-                className={`absolute left-0 w-[350px] max-h-[300px] overflow-y-auto bg-white rounded-2xl shadow-2xl border border-gray-200 z-50 animate-fadeIn p-2
+              {isOpen && (
+                <div
+                  className={`absolute left-0 w-[350px] max-h-[300px] overflow-y-auto bg-white rounded-2xl shadow-2xl border border-gray-200 z-50 animate-fadeIn p-2
               ${chatLog.length > 0 ? "bottom-full mb-3" : "top-full mt-1"}
               `}
-              >
-                {modelosGemini.map((modelo) => (
-                  <button
-                    key={modelo.id}
-                    onClick={() => seleccionarModelo(modelo)}
-                    className={`w-full p-3 mb-1 rounded-xl flex items-center gap-3 transition-all duration-200 hover:bg-gray-50 ${
-                      modeloSeleccionado.id === modelo.id
-                        ? "bg-orange-50 border border-orange-100"
-                        : ""
-                    }`}
-                  >
-                    <div
-                      className="p-2 rounded-lg flex-shrink-0 shadow-sm bg-white"
-                      style={{ color: modelo.color }}
-                    >
-                      {modelo.icono}
-                    </div>
-                    <div className="flex-1 text-left">
-                      <div className="flex items-center justify-between">
-                        <span className="font-bold text-gray-700 text-sm">
-                          {modelo.nombre}
-                        </span>
-                        {modeloSeleccionado.id === modelo.id && (
-                          <FaCheck className="text-[#E67E22] text-xs" />
-                        )}
-                      </div>
-                      <div className="text-xs text-gray-400">
-                        {modelo.descripcion}
-                      </div>
-                    </div>
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-
-          <input
-            type="file"
-            ref={inputFileRef}
-            hidden
-            onChange={handleFileChange}
-            accept="image/png, image/jpeg"
-          />
-
-          <input
-            type="text"
-            placeholder={
-              chatLog.length > 0
-                ? "Pregunta sobre la receta..."
-                : "¿Qué vamos a preparar hoy?"
-            }
-            className="flex-1 outline-none text-base bg-transparent px-2 text-gray-700 placeholder-gray-400"
-            value={solicitudReceta?.comida ?? ""}
-            onChange={(e) =>
-              updateSolicitudRecetaCallback("comida", e.target.value)
-            }
-            onKeyDown={(e) => e.key === "Enter" && handleEnviar()}
-          />
-
-          {chatLog.length == 0 && (
-            <IoIosAddCircle
-              size={25}
-              className="text-gray-400 hover:text-[#E67E22] transition-colors cursor-pointer"
-              onClick={() => setMostrarFormEspecificaciones(true)}
-            />
-          )}
-
-          {chatLog.length == 0 && (
-            <div>
-              {imagenPreview ? (
-                <div className="relative group w-10 h-10">
-                  <img
-                    src={imagenPreview}
-                    className="w-full h-full object-cover rounded-lg border border-orange-200 cursor-pointer"
-                  />
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setImagenPreview(undefined);
-                      updateSolicitudReceta("imagen", "");
-                    }}
-                    className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-4 h-4 flex items-center justify-center text-[10px] shadow-sm"
-                  >
-                    ✕
-                  </button>
-                </div>
-              ) : (
-                <button
-                  onClick={handleClickImagen}
-                  className="p-2 text-gray-400 hover:text-[#E67E22] rounded-xl transition-colors cursor-pointer"
-                  title="Subir foto"
                 >
-                  <FaImage size={25} />
-                </button>
+                  {modelosGemini.map((modelo) => (
+                    <button
+                      key={modelo.id}
+                      onClick={() => seleccionarModelo(modelo)}
+                      className={`w-full p-3 mb-1 rounded-xl flex items-center gap-3 transition-all duration-200 hover:bg-gray-50 ${
+                        modeloSeleccionado.id === modelo.id
+                          ? "bg-orange-50 border border-orange-100"
+                          : ""
+                      }`}
+                    >
+                      <div
+                        className="p-2 rounded-lg flex-shrink-0 shadow-sm bg-white"
+                        style={{ color: modelo.color }}
+                      >
+                        {modelo.icono}
+                      </div>
+                      <div className="flex-1 text-left">
+                        <div className="flex items-center justify-between">
+                          <span className="font-bold text-gray-700 text-sm">
+                            {modelo.nombre}
+                          </span>
+                          {modeloSeleccionado.id === modelo.id && (
+                            <FaCheck className="text-[#E67E22] text-xs" />
+                          )}
+                        </div>
+                        <div className="text-xs text-gray-400">
+                          {modelo.descripcion}
+                        </div>
+                      </div>
+                    </button>
+                  ))}
+                </div>
               )}
             </div>
-          )}
 
-          <button
-            onClick={handleEnviar}
-            disabled={
-              cargando || (!solicitudReceta?.comida && !solicitudReceta?.imagen)
-            }
-            className={`bg-[#E67E22] hover:bg-[#D35400] text-white p-3 rounded-xl transition-all shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center cursor-pointer`}
-          >
-            {cargando ? (
-              <div className="w-[18px] h-[18px] border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-            ) : (
-              <FaPaperPlane size={18} />
+            <input
+              type="file"
+              ref={inputFileRef}
+              hidden
+              onChange={handleFileChange}
+              accept="image/png, image/jpeg"
+            />
+
+            <input
+              type="text"
+              placeholder={
+                chatLog.length > 0
+                  ? "Pregunta sobre la receta"
+                  : "¿Qué vamos a preparar hoy?"
+              }
+              className="flex-1 outline-none text-base bg-transparent px-2 text-gray-700 placeholder-gray-400"
+              value={solicitudReceta?.comida ?? ""}
+              onChange={(e) =>
+                updateSolicitudRecetaCallback("comida", e.target.value)
+              }
+              onKeyDown={(e) => e.key === "Enter" && handleEnviar()}
+            />
+
+            {chatLog.length > 0 && <p>{contadorMensajesUsuario}/3</p>}
+
+            {chatLog.length == 0 && (
+              <IoIosAddCircle
+                size={25}
+                className="text-gray-400 hover:text-[#E67E22] transition-colors cursor-pointer"
+                onClick={() => setMostrarFormEspecificaciones(true)}
+              />
             )}
-          </button>
-        </div>
+
+            {chatLog.length == 0 && (
+              <div>
+                {imagenPreview ? (
+                  <div className="relative group w-10 h-10">
+                    <img
+                      src={imagenPreview}
+                      className="w-full h-full object-cover rounded-lg border border-orange-200 cursor-pointer"
+                    />
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setImagenPreview(undefined);
+                        updateSolicitudReceta("imagen", "");
+                      }}
+                      className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-4 h-4 flex items-center justify-center text-[10px] shadow-sm"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    onClick={handleClickImagen}
+                    className="p-2 text-gray-400 hover:text-[#E67E22] rounded-xl transition-colors cursor-pointer"
+                    title="Subir foto"
+                  >
+                    <FaImage size={25} />
+                  </button>
+                )}
+              </div>
+            )}
+
+            <button
+              onClick={() => {
+                handleEnviar();
+              }}
+              disabled={
+                cargando ||
+                (!solicitudReceta?.comida && !solicitudReceta?.imagen)
+              }
+              className={`bg-[#E67E22] hover:bg-[#D35400] text-white p-3 rounded-xl transition-all shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center cursor-pointer`}
+            >
+              {cargando ? (
+                <div className="w-[18px] h-[18px] border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+              ) : (
+                <FaPaperPlane size={18} />
+              )}
+            </button>
+          </div>
+        ) : (
+          ""
+        )}
 
         {/* Modales */}
         {mostrarFormEspecificaciones && (

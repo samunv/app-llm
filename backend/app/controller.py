@@ -11,7 +11,7 @@ def procesar_solicitud():
         datos = request.get_json()
 
         especificacionesObj = Especificaciones(**datos.get("especificaciones", {}))
-        
+
         solicitudRecetaObj = SolicitudReceta(
             comida=datos.get('comida', ''),
             modeloIASeleccionado=datos.get('modeloIASeleccionado', ''),
@@ -30,6 +30,7 @@ def procesar_solicitud():
             tipo_respuesta = "receta"
         elif isinstance(respuesta_ia, dict) and "error" in respuesta_ia:
             # Caso de error {"error": "..."}
+            respuesta_ia = respuesta_ia["error"]
             tipo_respuesta = "error"
         else:
             tipo_respuesta = "chat"
