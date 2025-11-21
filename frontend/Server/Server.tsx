@@ -3,8 +3,8 @@ import { SolicitudReceta } from "@/app/interfaces/SolicitudReceta";
 
 // Definimos la nueva estructura de respuesta del Backend
 export interface RespuestaBackend {
-  respuesta: Receta | string; // Puede ser objeto Receta O texto simple
-  tipo: "receta" | "chat";
+  respuesta: Receta | string | "error"; // Puede ser objeto Receta O texto simple
+  tipo: "receta" | "chat" | "error";
   estado: string;
   error?: string;
 }
