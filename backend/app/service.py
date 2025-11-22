@@ -91,7 +91,7 @@ Formato JSON exacto:
     "nombrePlato": "Nombre del plato",
     "ingredientes": ["Ingrediente 1", "Ingrediente 2"],
     "pasos": ["Paso 1", "Paso 2"],
-    "especificaciones": "Especificaciones del usuario si las hay"
+    "especificaciones": "Especificaciones del usuario si las hay, en forma de texto plano"
 }}
 
 Si el prompt no es sobre comida, puedes responder en texto plano sobre la receta anterior. Y si no
