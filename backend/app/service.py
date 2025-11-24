@@ -89,7 +89,7 @@ Si solo pregunta sobre la receta anterior, responde en texto.
 Formato JSON exacto:
 {{
     "nombrePlato": "Nombre del plato",
-    "ingredientes": ["Ingrediente 1", "Ingrediente 2"],
+    "ingredientes": ["Ingrediente 1", "Ingrediente 2"] (Ten en cuenta si el usuario especifica sus ingredientes),
     "pasos": ["Paso 1", "Paso 2"],
     "especificaciones": "Especificaciones del usuario si las hay, en forma de texto plano"
 }}
@@ -104,6 +104,7 @@ Prompt: "{comida}"
 Tipo de dieta: "{especificaciones.tipo_dieta}"
 Restricciones: "{especificaciones.restricciones}"
 Objetivo: "{especificaciones.objetivo}"
+Ingredientes: "{especificaciones.ingredientes_disponibles}" (solo tenlos en cuenta si los especifica el usuario, sino utiliza los que quieras)
 """
 
 

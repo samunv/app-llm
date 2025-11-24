@@ -7,6 +7,7 @@ import { IoSparkles } from "react-icons/io5";
 import { useSolicitudReceta } from "../contexts/SolicitudRecetaContext";
 import { Especificaciones } from "../interfaces/Especificaciones";
 import BotonGeneral from "./components/BotonGeneral";
+import { GiFishEggs, GiOpenedFoodCan } from "react-icons/gi";
 
 type Props = {
   cerrar: () => void;
@@ -14,7 +15,7 @@ type Props = {
 
 export default function FormularioEspecificaciones({ cerrar }: Props) {
   const { especificaciones, updateEspecificaciones } = useEspecificaciones();
-  const {updateSolicitudReceta} = useSolicitudReceta();
+  const { updateSolicitudReceta } = useSolicitudReceta();
   const [animarSalida, setAnimarSalida] = useState(false);
 
   // Manejar el cierre con animación
@@ -30,15 +31,20 @@ export default function FormularioEspecificaciones({ cerrar }: Props) {
 
   const handleUpdate = (clave: string, valor: string) => {
     updateEspecificaciones(clave, valor);
-    updateSolicitudReceta("especificaciones", especificaciones as Especificaciones)
-  
+
+    updateSolicitudReceta("especificaciones", {
+      ...(especificaciones ?? {}),
+      [clave]: valor,
+    });
   };
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 overflow-y-auto">
       {/* Overlay con efecto Blur y Fade */}
-      <div 
-        className={`fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity duration-300 ${animarSalida ? 'opacity-0' : 'opacity-100'}`}
+      <div
+        className={`fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity duration-300 ${
+          animarSalida ? "opacity-0" : "opacity-100"
+        }`}
         onClick={handleCerrar}
       ></div>
 
@@ -49,7 +55,11 @@ export default function FormularioEspecificaciones({ cerrar }: Props) {
           relative w-full max-w-md bg-[white] border-2 border-[#DCD3D0] rounded-3xl shadow-2xl 
           transform transition-all duration-300 ease-out
           
-          ${animarSalida ? 'scale-95 opacity-0 translate-y-4' : 'scale-100 opacity-100 translate-y-0 animate-scaleIn'}
+          ${
+            animarSalida
+              ? "scale-95 opacity-0 translate-y-4"
+              : "scale-100 opacity-100 translate-y-0 animate-scaleIn"
+          }
         `}
       >
         {/* Botón de cierre flotante (X) */}
@@ -66,20 +76,20 @@ export default function FormularioEspecificaciones({ cerrar }: Props) {
           <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-orange-50 text-[#E67E22] mb-4 shadow-inner">
             <IoSparkles size={26} />
           </div>
-          <h2 className="text-3xl text-[#343A40] mb-1">
-            Especificaciones
-          </h2>
+          <h2 className="text-3xl text-[#343A40] mb-1">Especificaciones</h2>
           <p className="text-[gray] text-sm">
             Personaliza tus especificaciones personales
           </p>
         </div>
 
         {/* Campos del Formulario */}
-        <div className="p-8 space-y-5">
-          
+        <div className="p-8 space-y-5 overflow-y-scroll max-h-[270px]">
           {/* Input: Tipo de Dieta */}
           <div className="group">
-            <label htmlFor="tipo_dieta" className="block text-sm font-semibold text-[#343A40] mb-1.5 ml-1">
+            <label
+              htmlFor="tipo_dieta"
+              className="block text-sm font-semibold text-[#343A40] mb-1.5 ml-1"
+            >
               Tipo de Dieta
             </label>
             <div className="relative transition-all duration-300 focus-within:transform focus-within:scale-[1.02]">
@@ -99,7 +109,10 @@ export default function FormularioEspecificaciones({ cerrar }: Props) {
 
           {/* Input: Restricciones */}
           <div className="group">
-            <label htmlFor="restricciones" className="block text-sm font-semibold text-[#343A40] mb-1.5 ml-1">
+            <label
+              htmlFor="restricciones"
+              className="block text-sm font-semibold text-[#343A40] mb-1.5 ml-1"
+            >
               Restricciones / Alergias
             </label>
             <div className="relative transition-all duration-300 focus-within:transform focus-within:scale-[1.02]">
@@ -119,7 +132,10 @@ export default function FormularioEspecificaciones({ cerrar }: Props) {
 
           {/* Input: Objetivo */}
           <div className="group">
-            <label htmlFor="objetivo" className="block text-sm font-semibold text-[#343A40] mb-1.5 ml-1">
+            <label
+              htmlFor="objetivo"
+              className="block text-sm font-semibold text-[#343A40] mb-1.5 ml-1"
+            >
               Objetivo Nutricional
             </label>
             <div className="relative transition-all duration-300 focus-within:transform focus-within:scale-[1.02]">
@@ -136,12 +152,34 @@ export default function FormularioEspecificaciones({ cerrar }: Props) {
               />
             </div>
           </div>
+          <div className="group">
+            <label
+              htmlFor="ingredientes_disponibles"
+              className="block text-sm font-semibold text-[#343A40] mb-1.5 ml-1"
+            >
+              Ingredientes
+            </label>
+            <div className="relative transition-all duration-300 focus-within:transform focus-within:scale-[1.02]">
+              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                <GiFishEggs className="text-[gray] group-focus-within:text-green-500 transition-colors" />
+              </div>
+              <input
+                type="text"
+                id="ingredientes_disponibles"
+                placeholder="Ej: Patatas, huevos..."
+                className="block w-full pl-10 pr-4 py-3 bg-[white] border border-[gray] rounded-xl text-gray-700 placeholder-[gray] focus:outline-none focus:bg-white focus:border-green-400 focus:ring-4 focus:ring-green-500/10 transition-all"
+                value={especificaciones?.ingredientes_disponibles}
+                onChange={(e) =>
+                  handleUpdate("ingredientes_disponibles", e.target.value)
+                }
+              />
+            </div>
+          </div>
         </div>
 
         {/* Footer de Botones */}
         <div className="p-8 pt-2 flex items-center gap-3">
-
-          <BotonGeneral texto={"Cerrar"} onClick={handleCerrar}/>
+          <BotonGeneral texto={"Cerrar"} onClick={handleCerrar} />
 
           <button
             type="submit"
