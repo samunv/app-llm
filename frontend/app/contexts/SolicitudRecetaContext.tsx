@@ -39,7 +39,8 @@ export const SolicitudRecetaProvider = ({
       setSolicitudReceta((solicitudPrevia) => {
         if (!solicitudPrevia) {
           return {
-            [claveActualizar]: valorActualizar,
+            [claveActualizar]: valorActualizar as string,
+            comida: "",
             modeloIASeleccionado: modeloSeleccionadoID,
             especificaciones: {},
             tipoImagen: "",

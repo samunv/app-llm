@@ -30,7 +30,6 @@ import { MensajeChat } from "../interfaces/MensajeChat";
 export default function Inicio() {
   // Contextos
   const { solicitudReceta, updateSolicitudReceta } = useSolicitudReceta();
-  const { especificaciones } = useEspecificaciones();
 
   // Hooks
   const [sidebarOpen, setSidebarOpen] = useState(true);
