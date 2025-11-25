@@ -27,7 +27,7 @@ def generar_respuesta_ia_local(datos_solicitud: SolicitudReceta):
     prompt_template = _obtener_prompt_template(instrucciones=instrucciones)
 
     # El historial de chat con tipo List[BaseMessage]
-    chat_history: list[BaseMessage] = [] 
+    chat_history: list[BaseMessage] = convertir_historial_a_langchain_messages(datos_solicitud.historial) 
 
     # Crear la cadena
     chain = prompt_template | llm
@@ -36,7 +36,7 @@ def generar_respuesta_ia_local(datos_solicitud: SolicitudReceta):
     # Se pasa el historial y el nuevo mensaje del usuario
     inputs = {
         "chat_history": chat_history,
-        "pregunta_usuario": datos_solicitud.comida + ". Si esta pregunta no es sobre comida o solicitando una receta, responde con que tu trabajo es crear recetas."
+        "pregunta_usuario": datos_solicitud.comida
     }
     # La respuesta es un objeto AIMessage
     respuesta_obj = chain.invoke(inputs)
@@ -44,14 +44,34 @@ def generar_respuesta_ia_local(datos_solicitud: SolicitudReceta):
     # Extraer contenido y actualizar historial
     respuesta_ia: str = respuesta_obj.content
 
-    # Añadir el turno completo (pregunta del usuario + respuesta del modelo) al historial
-    chat_history.append(HumanMessage(content=datos_solicitud.comida))
-    chat_history.append(AIMessage(content=respuesta_ia))
-    
     print("LOG>>> RESPUESTA LLM: ", repr(respuesta_ia))
     return extraer_formato_respuesta(respuesta=respuesta_ia)
 
-def _es_peticion_receta(prompt: str) -> bool:
-    """Palabras clave determinar si el usuario pide una receta nueva."""
-    prompt_lower = prompt.lower()
-    return any(keyword in prompt_lower for keyword in ["receta de", "hazme", "dame la receta", "cocinar", "receta", "haz", "dame", "Prepara", "cocina"])
+
+
+def convertir_historial_a_langchain_messages(historial: list[dict[str, any]]) -> list[BaseMessage]:
+    """
+    Convierte el historial a objetos BaseMessage de LangChain (HumanMessage/AIMessage) que el LLM puede procesar.
+    """
+    messages: list[BaseMessage] = []
+
+    if not historial:
+        return messages
+
+    for fila in historial:
+        role = fila.get('role')
+        parts = fila.get('parts', [])
+
+        content = ""
+        if parts and isinstance(parts[0], dict) and 'text' in parts[0]:
+            content = parts[0]['text']
+
+        if not content:
+            continue
+
+        if role == 'user':
+            messages.append(HumanMessage(content=content))
+        elif role == 'model':
+            messages.append(AIMessage(content=content))
+
+    return messages
