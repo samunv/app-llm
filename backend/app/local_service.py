@@ -6,7 +6,7 @@ from app.utils import obtener_instrucciones, extraer_formato_respuesta
 from app.models import SolicitudReceta
 
 # Inicialización de ChatOllama
-llm = ChatOllama(model="gemma:7b", temperature=0.2)
+llm = ChatOllama(model="llama3:8b", temperature=0.2)
 
 def _obtener_prompt_template(instrucciones: str) -> ChatPromptTemplate:
     return ChatPromptTemplate.from_messages(
@@ -27,7 +27,15 @@ def generar_respuesta_ia_local(datos_solicitud: SolicitudReceta):
     prompt_template = _obtener_prompt_template(instrucciones=instrucciones)
 
     # El historial de chat con tipo List[BaseMessage]
-    chat_history: list[BaseMessage] = convertir_historial_a_langchain_messages(datos_solicitud.historial) 
+    historial_cliente = datos_solicitud.historial.copy()
+    chat_history: list[BaseMessage] = convertir_historial_a_langchain_messages(historial=historial_cliente) 
+
+
+    print("\n--- DEBUG: Contenido de chat_history que llega a Llama ---")
+    for msg in chat_history:
+        print(f"[{msg.__class__.__name__}]: {msg.content[:50]}...")
+    print("----------------------------------------------------------\n")
+
 
     # Crear la cadena
     chain = prompt_template | llm

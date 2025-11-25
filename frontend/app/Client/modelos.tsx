@@ -24,12 +24,12 @@ export const modelosLLM: Modelo[] = [
     color: "#FBBC04",
   },
   {
-    id:"gemma:7b",
-    nombre: "Gemma (local)",
+    id:"llama3:8b",
+    nombre: "Llama (local)",
     version: "Local",
-    descripcion:"Sin límites. Lento. No lee imágenes. Requiere instalación de gemma:7b en el equipo.",
+    descripcion:"Más Lento. No lee imágenes. Requiere instalación de llama3.2:1b en el equipo.",
     velocidad:"equilibrado",
-    icono: <RiGeminiFill className="text-xl"/>,
+    icono: <SiOllama className="text-xl"/>,
     color:"#318BFF"
   }
 ];
