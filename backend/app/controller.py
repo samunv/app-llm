@@ -11,30 +11,7 @@ def procesar_solicitud():
     try:
         datos = request.get_json()
 
-        especificacionesObj = Especificaciones(**datos.get("especificaciones", {}))
-
-        solicitudRecetaObj = SolicitudReceta(
-            comida=datos.get('comida', ''),
-            modeloIASeleccionado=datos.get('modeloIASeleccionado', ''),
-            imagen=datos.get('imagen', ''),
-            tipoImagen=datos.get('tipoImagen',''),
-            especificaciones=especificacionesObj or Especificaciones(),
-            historial=datos.get('historial', []),
-        )
-
-        # Llamamos al servicio
-        respuesta_ia = generar_respuesta_ia(solicitudRecetaObj)
-        return _obtener_respuesta_formateada(respuesta_ia=respuesta_ia)
-
-    except Exception as e:
-        print(f"Error en controller: {str(e)}")
-        return jsonify({"error": str(e), "estado": "error"}), 500
-
-
-@app.route('/api/ia-local', methods=['POST'])
-def procesar_solicitud_ia_local():
-    try:
-        datos = request.get_json()
+        modeloSeleccionado = datos.get('modeloIASeleccionado', '')
 
         especificacionesObj = Especificaciones(**datos.get("especificaciones", {}))
 
@@ -47,8 +24,15 @@ def procesar_solicitud_ia_local():
             historial=datos.get('historial', []),
         )
 
-        # Llamamos al servicio
-        respuesta_ia = generar_respuesta_ia_local(solicitudRecetaObj)
+        respuesta_ia = ""
+
+        if modeloSeleccionado != "gemma:7b":
+            respuesta_ia = generar_respuesta_ia(solicitudRecetaObj)
+
+        else:
+            respuesta_ia = generar_respuesta_ia_local(solicitudRecetaObj)
+
+
         return _obtener_respuesta_formateada(respuesta_ia=respuesta_ia)
 
     except Exception as e:
@@ -67,6 +51,7 @@ def _obtener_respuesta_formateada(respuesta_ia):
         tipo_respuesta = "error"
     else:
         tipo_respuesta = "chat"
+        
 
     return jsonify({
             "respuesta": respuesta_ia,

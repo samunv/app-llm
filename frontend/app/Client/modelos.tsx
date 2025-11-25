@@ -1,7 +1,9 @@
 import { FaBolt, FaRocket } from "react-icons/fa6";
 import { Modelo } from "../interfaces/Modelo";
+import { SiOllama } from "react-icons/si";
+import { RiGeminiFill } from "react-icons/ri";
 
-export const modelosGemini: Modelo[] = [
+export const modelosLLM: Modelo[] = [
   {
     id: "gemini-2.5-flash",
     nombre: "Gemini 2.5 Flash",
@@ -21,4 +23,13 @@ export const modelosGemini: Modelo[] = [
     icono: <FaBolt className="text-xl" />,
     color: "#FBBC04",
   },
+  {
+    id:"gemma:7b",
+    nombre: "Gemma (local)",
+    version: "Local",
+    descripcion:"Sin límites. Lento. No lee imágenes. Requiere instalación en local.",
+    velocidad:"equilibrado",
+    icono: <RiGeminiFill className="text-xl"/>,
+    color:"blue"
+  }
 ];

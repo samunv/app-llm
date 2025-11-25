@@ -1,6 +1,7 @@
 import { Conversacion } from "@/app/interfaces/Conversacion";
 import { FaPlus, FaTrash, FaMessage, FaBars, FaXmark, FaGear } from "react-icons/fa6";
 import { IoSparkles } from "react-icons/io5";
+import { MdComputer, MdLocalFireDepartment } from "react-icons/md";
 
 type Props = {
   isOpen: boolean;
@@ -59,7 +60,7 @@ export default function Sidebar({
               nuevaConversacion();
               if (window.innerWidth < 768) toggleSidebar();
             }}
-            className="w-full flex items-center justify-center gap-2 px-4 py-3.5 bg-gradient-to-r from-[#E67E22] to-[#D35400] hover:from-[#D35400] hover:to-[#C0392B] text-white rounded-xl transition-all hover:shadow-orange-500/40 active:scale-95 font-semibold text-sm cursor-pointer"
+            className="w-full flex items-center justify-center gap-2 px-4 py-3.5 bg-orange-500 hover:bg-orange-600 text-white rounded-xl transition-all hover:shadow-orange-500/40 active:scale-95 font-semibold text-sm cursor-pointer"
           >
             <FaPlus />
             Nueva receta
@@ -108,17 +109,19 @@ export default function Sidebar({
           </div>
         </div>
 
-        {/* Footer Sidebar - BOTÓN DE AJUSTES AÑADIDO */}
+        
         {/* <div className="p-4 border-t border-gray-100 bg-gray-50/50">
           <button
-            onClick={abrirAjustes}
-            className="w-full flex items-center gap-3 p-2 text-sm text-gray-600 hover:text-[#E67E22] hover:bg-white rounded-lg transition-all font-medium group"
+            onClick={()=>{}}
+            className="w-full flex items-center gap-3 p-2 text-sm text-gray-600 hover:text-[#E67E22] hover:bg-white rounded-lg transition-all font-medium group cursor-pointer"
           >
-            <FaGear className="group-hover:rotate-90 transition-transform duration-500" />
-            <span>Configuración y Alérgenos</span>
+            <MdLocalFireDepartment className=" transition-transform duration-500" size={20}/>
+            <span></span>
           </button>
         </div> */}
       </div>
+
+
 
       {/* Overlay Móvil */}
       {isOpen && (
