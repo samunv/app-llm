@@ -27,7 +27,7 @@ export const modelosLLM: Modelo[] = [
     id:"gemma:7b",
     nombre: "Gemma (local)",
     version: "Local",
-    descripcion:"Sin límites. Lento. No lee imágenes. Requiere instalación en local.",
+    descripcion:"Sin límites. Lento. No lee imágenes. Requiere instalación de gemma:7b en el equipo.",
     velocidad:"equilibrado",
     icono: <RiGeminiFill className="text-xl"/>,
     color:"blue"
