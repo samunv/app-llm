@@ -5,4 +5,5 @@ export interface MensajeChat {
   rol: "usuario" | "ia";
   tipo: "texto" | "receta" | "error";
   contenido: string | Receta;
+  imagen?:string
 }
