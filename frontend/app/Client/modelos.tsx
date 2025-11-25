@@ -30,6 +30,6 @@ export const modelosLLM: Modelo[] = [
     descripcion:"Sin límites. Lento. No lee imágenes. Requiere instalación de gemma:7b en el equipo.",
     velocidad:"equilibrado",
     icono: <RiGeminiFill className="text-xl"/>,
-    color:"blue"
+    color:"#318BFF"
   }
 ];

@@ -34,7 +34,7 @@ export default function Sidebar({
 
       {/* CONTENEDOR DEL SIDEBAR */}
       <div
-        className={`fixed inset-y-0 left-0 z-40 w-[300px] bg-white/95 backdrop-blur-md text-[#343A40] transform transition-transform duration-300 ease-in-out shadow-2xl border-r border-gray-400 flex flex-col
+        className={`fixed inset-y-0 left-0 z-40 w-[300px] bg-white text-[#343A40] transform transition-transform duration-300 ease-in-out border-r border-gray-300 flex flex-col
         ${isOpen ? "translate-x-0" : "-translate-x-full"}`}
       >
         {/* Cabecera Sidebar (Botón cerrar y Logo pequeño) */}

@@ -9,7 +9,7 @@ import {
   FaImage,
   FaUser,
 } from "react-icons/fa6";
-import { IoIosAddCircle } from "react-icons/io";
+import { IoIosAddCircle, IoMdInformationCircle } from "react-icons/io";
 
 import "./Inicio.css";
 import { useSolicitudReceta } from "../contexts/SolicitudRecetaContext";
@@ -26,6 +26,7 @@ import Sidebar from "./components/Sidebar";
 import { useHistorial } from "../hooks/useHistorial";
 import { Conversacion } from "../interfaces/Conversacion";
 import { MensajeChat } from "../interfaces/MensajeChat";
+import { FaInfoCircle } from "react-icons/fa";
 
 export default function Inicio() {
   // Contextos
@@ -301,13 +302,15 @@ export default function Inicio() {
 
         {/* BIENVENIDA */}
         {chatLog.length === 0 && !cargando && (
-          <h1 className="text-[#343A40] text-3xl text-center font-medium animate-fadeIn px-4">
-            ¡Hola! soy tu chef y hago recetas
+          <h1 className="text-[#343A40] text-3xl text-center font-[code] animate-fadeIn px-4">
+            ¡Hola! hago recetas
             <TypingText
               frases={[" rápidas.", " creativas.", " personalizadas."]}
             />
           </h1>
         )}
+
+        
 
         {/* --- AREA CHAT --- */}
         <div className="w-full max-w-[750px] px-4 flex flex-col gap-8">
@@ -425,7 +428,7 @@ export default function Inicio() {
         {contadorMensajesUsuario < 3 ? (
           <div
             className={`
-            bg-white mt-7 text-[#343A40] p-2 pr-3 pl-4 border-1 border-gray-400 rounded-2xl flex flex-row items-center gap-3 shadow-2xl shadow-orange-500/10 focus-within:border-[#E67E22]  z-50
+            bg-white mt-7 text-[#343A40] p-3 border-1 border-gray-300 shadow-xl rounded-2xl flex flex-row items-center gap-3 focus-within:border-[#E67E22]  z-50
             ${
               chatLog.length > 0
                 ? `fixed bottom-8 w-[750px] ${
@@ -439,8 +442,8 @@ export default function Inicio() {
             <div className="relative" ref={dropdownRef}>
               <button
                 onClick={() => setIsOpen(!isOpen)}
-                className="flex items-center gap-2.5 px-3 py-2 bg-orange-500 hover:bg-orange-600 cursor-pointer text-white rounded-xl transition-all duration-300 shadow-md hover:shadow-lg border border-[#8D6E63]/10 min-w-[180px] group relative"
-                // style={{backgroundColor:modeloSeleccionado.color}}
+                className="flex items-center gap-2.5 px-3 py-2 cursor-pointer text-white rounded-xl transition-all duration-300 shadow-md hover:shadow-lg border border-[#8D6E63]/10 min-w-[180px] group relative"
+                style={{backgroundColor:modeloSeleccionado.color}}
               >
                 {modeloSeleccionado.recomendado && (
                   <div className="absolute -top-1 -right-1 bg-yellow-400 text-[white] text-[9px] font-bold px-1.5 py-0.5 rounded-full shadow-sm">
@@ -593,9 +596,15 @@ export default function Inicio() {
         ) : (
           ""
         )}
+        {modeloSeleccionado.id == modelosLLM[2].id && chatLog.length == 0 && (
+          <div className="flex flex-row items-center justify-center text-orange-500 bg-[#FFEDD4] rounded-xl px-2 mt-4">
+            <FaInfoCircle/> 
+            <p className="p-4">Debes tener instalado el modelo <span className="font-bold">gemma:7b</span> en tu equipo para continuar.</p>
+        </div>
+         )}
 
         {/* Modales */}
-        {mostrarFormEspecificaciones && (
+        {mostrarFormEspecificaciones  && (
           <FormularioEspecificaciones cerrar={cerrarFormulario} />
         )}
         {/* {modalAbierto && (
