@@ -157,7 +157,7 @@ export default function FormularioEspecificaciones({ cerrar }: Props) {
               htmlFor="ingredientes_disponibles"
               className="block text-sm font-semibold text-[#343A40] mb-1.5 ml-1"
             >
-              Ingredientes
+              Ingredientes Personalizados
             </label>
             <div className="relative transition-all duration-300 focus-within:transform focus-within:scale-[1.02]">
               <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">

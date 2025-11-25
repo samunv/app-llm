@@ -15,7 +15,7 @@ import "./Inicio.css";
 import { useSolicitudReceta } from "../contexts/SolicitudRecetaContext";
 import { useEspecificaciones } from "../contexts/EspecificacionesContext";
 import FormularioEspecificaciones from "./FormularioEspecificaciones";
-import { modelosGemini } from "./modelos";
+import { modelosLLM } from "./modelos";
 import { Modelo } from "../interfaces/Modelo";
 import { enviarReceta } from "@/Server/Server";
 import TypingText from "./components/TypingText";
@@ -38,7 +38,7 @@ export default function Inicio() {
   // Estados UI
   const [isOpen, setIsOpen] = useState(false);
   const [modeloSeleccionado, setModeloSeleccionado] = useState<Modelo>(
-    modelosGemini[0]
+    modelosLLM[0]
   );
   const [mostrarFormEspecificaciones, setMostrarFormEspecificaciones] =
     useState<boolean>(false);
@@ -55,7 +55,8 @@ export default function Inicio() {
   const contadorMensajesUsuario = useMemo(() => {
     // Filtramos solo los mensajes del usuario
     const mensajesUsuario = chatLog.filter((msg) => msg.rol === "usuario");
-    return mensajesUsuario.length;
+    return mensajesUsuario.length;  
+    
   }, [chatLog]);
 
   // Scroll automático
@@ -240,21 +241,6 @@ export default function Inicio() {
     setModeloSeleccionado(modelo);
     setIsOpen(false);
   };
-
-  // const getVelocidadConfig = (velocidad: string) => {
-  //   switch (velocidad) {
-  //     case "ultrarrápido":
-  //       return { color: "text-green-600", emoji: "⚡⚡", bg: "bg-green-50" };
-  //     case "rápido":
-  //       return { color: "text-emerald-600", emoji: "⚡", bg: "bg-emerald-50" };
-  //     case "equilibrado":
-  //       return { color: "text-blue-600", emoji: "⚖️", bg: "bg-blue-50" };
-  //     case "potente":
-  //       return { color: "text-purple-600", emoji: "🔥", bg: "bg-purple-50" };
-  //     default:
-  //       return { color: "text-gray-600", emoji: "⭐", bg: "bg-gray-50" };
-  //   }
-  // };
 
   useEffect(() => {
     if (modeloSeleccionado) {
@@ -453,7 +439,8 @@ export default function Inicio() {
             <div className="relative" ref={dropdownRef}>
               <button
                 onClick={() => setIsOpen(!isOpen)}
-                className="flex items-center gap-2.5 px-3 py-2 bg-gradient-to-r from-[#E67E22] to-[#D35400] hover:from-[#D35400] hover:to-[#C0392B] text-white rounded-xl transition-all duration-300 shadow-md hover:shadow-lg border border-[#8D6E63]/10 min-w-[180px] group relative"
+                className="flex items-center gap-2.5 px-3 py-2 bg-orange-500 hover:bg-orange-600 cursor-pointer text-white rounded-xl transition-all duration-300 shadow-md hover:shadow-lg border border-[#8D6E63]/10 min-w-[180px] group relative"
+                // style={{backgroundColor:modeloSeleccionado.color}}
               >
                 {modeloSeleccionado.recomendado && (
                   <div className="absolute -top-1 -right-1 bg-yellow-400 text-[white] text-[9px] font-bold px-1.5 py-0.5 rounded-full shadow-sm">
@@ -461,7 +448,7 @@ export default function Inicio() {
                   </div>
                 )}
                 <div
-                  className="p-1.5 bg-white/20 rounded-lg backdrop-blur-sm flex-shrink-0"
+                  className="p-1.5 bg-white rounded-lg backdrop-blur-sm flex-shrink-0"
                   style={{ color: modeloSeleccionado.color }}
                 >
                   {modeloSeleccionado.icono}
@@ -483,11 +470,11 @@ export default function Inicio() {
 
               {isOpen && (
                 <div
-                  className={`absolute left-0 w-[350px] max-h-[300px] overflow-y-auto bg-white rounded-2xl shadow-2xl border border-gray-200 z-50 animate-fadeIn p-2
+                  className={`absolute left-0 w-[350px] max-h-[200px] overflow-y-auto bg-white rounded-2xl shadow-2xl border border-gray-200 z-50 animate-fadeIn p-2
               ${chatLog.length > 0 ? "bottom-full mb-3" : "top-full mt-1"}
               `}
                 >
-                  {modelosGemini.map((modelo) => (
+                  {modelosLLM.map((modelo) => (
                     <button
                       key={modelo.id}
                       onClick={() => seleccionarModelo(modelo)}
@@ -555,7 +542,7 @@ export default function Inicio() {
               />
             )}
 
-            {chatLog.length == 0 && (
+            {chatLog.length == 0 && modeloSeleccionado.id != modelosLLM[2].id && (
               <div>
                 {imagenPreview ? (
                   <div className="relative group w-10 h-10">
@@ -594,7 +581,7 @@ export default function Inicio() {
                 cargando ||
                 (!solicitudReceta?.comida && !solicitudReceta?.imagen)
               }
-              className={`bg-[#E67E22] hover:bg-[#D35400] text-white p-3 rounded-xl transition-all shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center cursor-pointer`}
+              className={`bg-orange-500 hover:bg-orange-600 text-white p-3 rounded-xl transition-all shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center cursor-pointer`}
             >
               {cargando ? (
                 <div className="w-[18px] h-[18px] border-2 border-white border-t-transparent rounded-full animate-spin"></div>
