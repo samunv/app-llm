@@ -31,6 +31,7 @@ import { FaInfoCircle } from "react-icons/fa";
 export default function Inicio() {
   // Contextos
   const { solicitudReceta, updateSolicitudReceta } = useSolicitudReceta();
+  const { updateEspecificaciones, setEspecificaciones } = useEspecificaciones();
 
   // Hooks
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -76,6 +77,9 @@ export default function Inicio() {
     const imagenInput = solicitudReceta?.imagen;
 
     if (!textoInput && !imagenInput) return;
+
+    // Vaciar especificaciones
+    setEspecificaciones({})
 
     // 1. Mensaje Usuario
     const msgUsuario: MensajeChat = {
@@ -324,9 +328,9 @@ export default function Inicio() {
               {/* TEXTO (Usuario o IA Conversación) */}
               {msg.tipo === "texto" && (
                 <div
-                  className={`max-w-[85%] p-5 rounded-2xl shadow-sm text-base leading-relaxed ${
+                  className={`max-w-[85%] p-5 rounded-2xl text-base leading-relaxed ${
                     msg.rol === "usuario"
-                      ? "bg-white border border-gray-300 text-[#1F1F1F] rounded-br-sm"
+                      ? "bg-orange-500 border border-orange-500 text-[white] rounded-br-sm"
                       : "bg-white border border-gray-300 text-[#343A40] rounded-bl-sm"
                   }`}
                 >
@@ -353,6 +357,7 @@ export default function Inicio() {
                   <p className="whitespace-pre-wrap">
                     {typeof msg.contenido === "string" ? msg.contenido : ""}
                   </p>
+                  
                 </div>
               )}
 
