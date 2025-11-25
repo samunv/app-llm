@@ -26,7 +26,7 @@ def procesar_solicitud():
 
         respuesta_ia = ""
 
-        if modeloSeleccionado != "gemma:7b":
+        if modeloSeleccionado != "llama3:8b":
             respuesta_ia = generar_respuesta_ia(solicitudRecetaObj)
 
         else:

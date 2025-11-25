@@ -425,7 +425,8 @@ export default function Inicio() {
         </div>
 
         {/* BARRA FLOTANTE: Solo aparecerá hasta que haya 3 mensajes en total del usuario, después se quitará por límite de conversación.*/}
-        {contadorMensajesUsuario < 3 ? (
+        
+
           <div
             className={`
             bg-white mt-7 text-[#343A40] p-3 border-1 border-gray-300 shadow-xl rounded-2xl flex flex-row items-center gap-3 focus-within:border-[#E67E22]  z-50
@@ -535,17 +536,15 @@ export default function Inicio() {
               onKeyDown={(e) => e.key === "Enter" && handleEnviar()}
             />
 
-            {chatLog.length > 0 && <p>{contadorMensajesUsuario}/3</p>}
-
-            {chatLog.length == 0 && (
+            
               <IoIosAddCircle
                 size={25}
                 className="text-gray-400 hover:text-[#E67E22] transition-colors cursor-pointer"
                 onClick={() => setMostrarFormEspecificaciones(true)}
               />
-            )}
+            
 
-            {chatLog.length == 0 && modeloSeleccionado.id != modelosLLM[2].id && (
+            {modeloSeleccionado.id != modelosLLM[2].id && (
               <div>
                 {imagenPreview ? (
                   <div className="relative group w-10 h-10">
@@ -593,13 +592,11 @@ export default function Inicio() {
               )}
             </button>
           </div>
-        ) : (
-          ""
-        )}
+        
         {modeloSeleccionado.id == modelosLLM[2].id && chatLog.length == 0 && (
           <div className="flex flex-row items-center justify-center text-orange-500 bg-[#FFEDD4] rounded-xl px-2 mt-4">
             <FaInfoCircle/> 
-            <p className="p-4">Debes tener instalado el modelo <span className="font-bold">gemma:7b</span> en tu equipo para continuar.</p>
+            <p className="p-4">Debes tener instalado el modelo <span className="font-bold">{modeloSeleccionado.id}</span> en tu equipo para continuar.</p>
         </div>
          )}
 

@@ -1,7 +1,6 @@
 import { Conversacion } from "@/app/interfaces/Conversacion";
 import { FaPlus, FaTrash, FaMessage, FaBars, FaXmark, FaGear } from "react-icons/fa6";
 import { IoSparkles } from "react-icons/io5";
-import { MdComputer, MdLocalFireDepartment } from "react-icons/md";
 
 type Props = {
   isOpen: boolean;
