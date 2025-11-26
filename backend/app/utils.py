@@ -38,13 +38,12 @@ ESPECIFICACIONES DEL USUARIO:
 """
 
 
-def extraer_formato_respuesta(respuesta):
+def extraer_formato_respuesta(respuesta:str)->Receta | str:
     try:
         json_str = _extraerJSON(respuesta)
         json_receta = json.loads(json_str)
 
         if isinstance(json_receta, dict) and "nombrePlato" in json_receta:
-            from app.models.Receta import Receta
             return Receta(
                 json_receta.get("nombrePlato"),
                 json_receta.get("ingredientes"),
@@ -55,7 +54,7 @@ def extraer_formato_respuesta(respuesta):
         print("Error al extraer receta:", e)
 
     # Devuelve texto plano si no hay JSON válido
-    return respuesta
+    return respuesta 
 
 def _extraerJSON(texto):
     """

@@ -23,19 +23,26 @@ def _obtener_prompt_template(instrucciones: str) -> ChatPromptTemplate:
     )
 
 def generar_respuesta_ia_local(datos_solicitud: SolicitudReceta):
+
     instrucciones = obtener_instrucciones(datos_solicitud=datos_solicitud)
-    prompt_template = _obtener_prompt_template(instrucciones=instrucciones)
 
     # El historial de chat con tipo List[BaseMessage]
     historial_cliente = datos_solicitud.historial.copy()
-    chat_history: list[BaseMessage] = convertir_historial_a_langchain_messages(historial=historial_cliente) 
+    chat_history: list[BaseMessage] = _convertir_historial_a_langchain_messages(historial=historial_cliente) 
 
 
     print("\n--- DEBUG: Contenido de chat_history que llega a Llama ---")
     for msg in chat_history:
         print(f"[{msg.__class__.__name__}]: {msg.content[:50]}...")
     print("----------------------------------------------------------\n")
+    
+    respuesta_ia: str = _obtener_respuesta_ia(instrucciones=instrucciones, chat_history=chat_history, prompt=datos_solicitud.comida)
 
+    print("LOG>>> RESPUESTA LLM: ", repr(respuesta_ia))
+    return extraer_formato_respuesta(respuesta=respuesta_ia)
+
+def _obtener_respuesta_ia(instrucciones:str, chat_history: list[BaseMessage], prompt:str):
+    prompt_template = _obtener_prompt_template(instrucciones=instrucciones)
 
     # Crear la cadena
     chain = prompt_template | llm
@@ -44,20 +51,13 @@ def generar_respuesta_ia_local(datos_solicitud: SolicitudReceta):
     # Se pasa el historial y el nuevo mensaje del usuario
     inputs = {
         "chat_history": chat_history,
-        "pregunta_usuario": datos_solicitud.comida
+        "pregunta_usuario": prompt
     }
     # La respuesta es un objeto AIMessage
-    respuesta_obj = chain.invoke(inputs)
-
-    # Extraer contenido y actualizar historial
-    respuesta_ia: str = respuesta_obj.content
-
-    print("LOG>>> RESPUESTA LLM: ", repr(respuesta_ia))
-    return extraer_formato_respuesta(respuesta=respuesta_ia)
+    return chain.invoke(inputs).content
 
 
-
-def convertir_historial_a_langchain_messages(historial: list[dict[str, any]]) -> list[BaseMessage]:
+def _convertir_historial_a_langchain_messages(historial: list[dict[str, any]]) -> list[BaseMessage]:
     """
     Convierte el historial a objetos BaseMessage de LangChain (HumanMessage/AIMessage) que el LLM puede procesar.
     """

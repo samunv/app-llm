@@ -18,7 +18,7 @@ def generar_respuesta_ia(datos_solicitud: SolicitudReceta):
     modelo_id = datos_solicitud.modeloIASeleccionado or "gemini-2.5-flash"
 
     # Preparamos el contenido del chat con historial + nuevo mensaje
-    contents = _obtener_contents(datos_solicitud=datos_solicitud)
+    contents = _obtener_contents_con_historial(datos_solicitud=datos_solicitud)
 
     # Instrucciones generales: crear receta o responder sobre existente
     instrucciones = obtener_instrucciones(datos_solicitud)
@@ -41,7 +41,7 @@ def _obtener_playload(contents, instruccionesSistema):
     }
     return playload
 
-def _obtener_contents(datos_solicitud):
+def _obtener_contents_con_historial(datos_solicitud):
     contents = datos_solicitud.historial.copy()
 
     if datos_solicitud.imagen and datos_solicitud.tipoImagen:
@@ -69,7 +69,7 @@ def _obtener_contents(datos_solicitud):
     return contents
 
 
-def _llamar_api_gemini(payload, modelo_id):
+def _llamar_api_gemini(payload: dict[str, any], modelo_id:str)->str:
     url = f"https://generativelanguage.googleapis.com/v1beta/models/{modelo_id}:generateContent?key={api_key}"
     headers = {"Content-Type": "application/json"}
     try:
