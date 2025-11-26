@@ -27,6 +27,7 @@ import { useHistorial } from "../hooks/useHistorial";
 import { Conversacion } from "../interfaces/Conversacion";
 import { MensajeChat } from "../interfaces/MensajeChat";
 import { FaInfoCircle } from "react-icons/fa";
+import Image from "next/image";
 
 export default function Inicio() {
   // Contextos
@@ -82,7 +83,7 @@ export default function Inicio() {
       id: crypto.randomUUID(),
       rol: "usuario",
       tipo: "texto",
-      contenido: textoInput || (imagenInput ? "Analiza esta imagen" : ""),
+      contenido: textoInput || (imagenInput ? "Haz una receta para el contenido de la imagen" : ""),
       imagen: imagenPreview ? imagenPreview : "",
     };
 
@@ -328,46 +329,52 @@ export default function Inicio() {
               {/* TEXTO (Usuario o IA Conversación) */}
               {msg.tipo === "texto" && (
                 <div
-                  className={`max-w-[85%] p-5 rounded-2xl text-base leading-relaxed ${
+                  className="flex flex-col items-end justify-right"
+                >
+                  <div className={`flex-1 p-5 rounded-2xl text-base leading-relaxed ${
                     msg.rol === "usuario"
                       ? "bg-gradient-to-r from-orange-500 to-yellow-500 text-[white] rounded-br-sm"
                       : "bg-white border border-gray-300 text-[#343A40] rounded-bl-sm"
-                  }`}
-                >
-                  {msg.rol === "ia" && (
-                    <div className="flex items-center gap-1 mb-2 font-bold text-[#E67E22]">
-                      <svg
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        width={20}
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <path
-                          d="M7 5C4.23858 5 2 7.23858 2 10C2 12.0503 3.2341 13.8124 5 14.584V17.25H19L19 14.584C20.7659 13.8124 22 12.0503 22 10C22 7.23858 19.7614 5 17 5C16.7495 5 16.5033 5.01842 16.2626 5.05399C15.6604 3.27806 13.9794 2 12 2C10.0206 2 8.33961 3.27806 7.73736 5.05399C7.49673 5.01842 7.25052 5 7 5Z"
-                          className="fill-orange-500"
-                        ></path>
-                        <path
-                          d="M18.9983 18.75H5.00169C5.01188 20.1469 5.08343 20.9119 5.58579 21.4142C6.17157 22 7.11438 22 9 22H15C16.8856 22 17.8284 22 18.4142 21.4142C18.9166 20.9119 18.9881 20.1469 18.9983 18.75Z"
-                          className="fill-orange-500"
-                        ></path>
-                      </svg>{" "}
-                      ChefGPT
-                    </div>
-                  )}
-                  <div>
+                  }`}>
+                    {msg.rol === "ia" && (
+                      <div className="flex items-center gap-1 mb-2 font-bold text-[#E67E22]">
+                        <svg
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          width={20}
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            d="M7 5C4.23858 5 2 7.23858 2 10C2 12.0503 3.2341 13.8124 5 14.584V17.25H19L19 14.584C20.7659 13.8124 22 12.0503 22 10C22 7.23858 19.7614 5 17 5C16.7495 5 16.5033 5.01842 16.2626 5.05399C15.6604 3.27806 13.9794 2 12 2C10.0206 2 8.33961 3.27806 7.73736 5.05399C7.49673 5.01842 7.25052 5 7 5Z"
+                            className="fill-orange-500"
+                          ></path>
+                          <path
+                            d="M18.9983 18.75H5.00169C5.01188 20.1469 5.08343 20.9119 5.58579 21.4142C6.17157 22 7.11438 22 9 22H15C16.8856 22 17.8284 22 18.4142 21.4142C18.9166 20.9119 18.9881 20.1469 18.9983 18.75Z"
+                            className="fill-orange-500"
+                          ></path>
+                        </svg>{" "}
+                        ChefGPT
+                      </div>
+                    )}
+
                     <p className="whitespace-pre-wrap">
                       {typeof msg.contenido === "string" ? msg.contenido : ""}
                     </p>
-                    {msg.rol == "usuario" && msg.imagen != "" && (
-                      <img
-                        src={msg.imagen}
-                        alt=""
-                        className="mx-auto w-[150px] object-contain rounded-md mt-3 border border-white"
-                      />
-                    )}
                   </div>
+                  {msg.rol == "usuario" && msg.imagen != "" && (
+                    <Image
+                      src={msg.imagen as string}
+                      alt=""
+                      width={150}
+                      height={150}
+                      className=" w-[150px] object-contain rounded-md mt-3 border border-gray-300 shadow-lg"
+                    />
+                  )}
+
+                  
                 </div>
               )}
+
 
               {/* RECETA (Diseño Original Restaurado) */}
               {msg.tipo === "receta" && (
@@ -421,7 +428,14 @@ export default function Inicio() {
                         </div>
 
                         {/* Botón PDF Integrado */}
-                        <GeneradorPDF htmlElement={`receta-${msg.id}`} />
+                        <GeneradorPDF
+                          htmlElement={`receta-${msg.id}`}
+                          fileName={
+                            msg.tipo === "receta"
+                              ? (msg.contenido as Receta).nombrePlato
+                              : ""
+                          }
+                        />
                       </div>
                     );
                   })()}
@@ -603,7 +617,7 @@ export default function Inicio() {
         </div>
 
         {modeloSeleccionado.id == modelosLLM[2].id && chatLog.length == 0 && (
-          <div className="flex flex-row items-center justify-center text-orange-500 bg-[#FFEDD4] rounded-xl px-2 mt-4">
+          <div className="flex flex-row items-center justify-center text-orange-500 bg-[#FFEDD4] rounded-xl px-2 mt-10">
             <FaInfoCircle />
             <p className="p-4">
               Debes tener instalado el modelo{" "}

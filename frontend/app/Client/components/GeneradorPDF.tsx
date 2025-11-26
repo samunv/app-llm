@@ -1,14 +1,15 @@
 "use client";
-import React from "react";
+
 import html2pdf from "html2pdf.js";
 import BotonGeneral from "./BotonGeneral";
 import { LuDownload } from "react-icons/lu";
 
 type Props = {
   htmlElement: string;
+  fileName: string
 };
 
-export default function GeneradorPDF({ htmlElement }: Props) {
+export default function GeneradorPDF({ htmlElement, fileName }: Props) {
   const generarPDF = () => {
     const element = document.getElementById(htmlElement);
 
@@ -18,8 +19,8 @@ export default function GeneradorPDF({ htmlElement }: Props) {
     }
 
     const opciones = {
-      margin: 10,
-      filename: "receta.pdf",
+      margin: 20,
+      filename: fileName,
       image: {
         type: "jpeg",
         quality: 0.98,
