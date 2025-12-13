@@ -5,7 +5,7 @@ import { RiGeminiFill } from "react-icons/ri";
 
 export const modelosLLM: Modelo[] = [
   {
-    id: "gemini-2.5-flash",
+    id: "gemini-2.5-flash-lite",
     nombre: "Gemini 2.5 Flash",
     version: "Última Generación",
     descripcion: "Lo último de Google, perfecto para recetas innovadoras",
