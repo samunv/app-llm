@@ -1,9 +1,11 @@
 import { Receta } from "@/app/interfaces/Receta";
 import { SolicitudReceta } from "@/app/interfaces/SolicitudReceta";
+import { VideoInfo } from "@/app/interfaces/VideoInfo";
 
 // Definimos la nueva estructura de respuesta del Backend
 export interface RespuestaBackend {
-  respuesta: Receta | string | "error"; // Puede ser objeto Receta O texto simple
+  respuesta: Receta | string | "error";
+  video: VideoInfo,
   tipo: "receta" | "chat" | "error";
   estado: string;
   error?: string;

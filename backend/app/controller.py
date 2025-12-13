@@ -5,6 +5,8 @@ from app.models.SolicitudReceta import SolicitudReceta
 from app.local_service import generar_respuesta_ia_local
 from app.rate_limiter import rate_limiter
 from app.models.Receta import Receta
+from app.youtube_api_service import obtener_video_youtube
+from app.models.VideoInfo import VideoInfo
 import uuid
 
 app = Flask(__name__)
@@ -62,14 +64,20 @@ def _generar_y_obtener_respuesta(modeloSeleccionado: str, solicitudRecetaObj: So
     else:
         respuesta_ia = generar_respuesta_ia_local(solicitudRecetaObj)
 
-    return _json_respuesta(respuesta_ia=respuesta_ia)
+    # TODO: Lógica para obtener video:
+    if isinstance(respuesta_ia, Receta):
+        video = obtener_video_youtube(respuesta_ia.nombrePlato)
+    else:
+        video = None
+
+    return _json_respuesta(respuesta_ia=respuesta_ia, video=video)
 
 
 
 
 
 
-def _json_respuesta(respuesta_ia: Receta | str):
+def _json_respuesta(respuesta_ia: Receta | str, video: VideoInfo = None):
 
     if hasattr(respuesta_ia, "to_dict"):
         respuesta_ia = respuesta_ia.to_dict()
@@ -84,5 +92,6 @@ def _json_respuesta(respuesta_ia: Receta | str):
     return jsonify({
             "respuesta": respuesta_ia,
             "tipo": tipo_respuesta,
-            "estado": "exito"
+            "estado": "exito",
+            "video": video.to_dict() if video else None
         })
