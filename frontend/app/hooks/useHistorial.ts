@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Conversacion } from "../interfaces/Conversacion";
 import { Receta } from "../interfaces/Receta";
+import { VideoInfo } from "../interfaces/VideoInfo";
 
 export const useHistorial = () => {
   const [historial, setHistorial] = useState<Conversacion[]>(() => {
@@ -12,12 +13,13 @@ export const useHistorial = () => {
     }
   });
 
-  const guardarConversacion = (receta: Receta, comidaSolicitada: string) => {
+  const guardarConversacion = (receta: Receta, comidaSolicitada: string, video: VideoInfo | null) => {
     const nuevaConversacion: Conversacion = {
       id: crypto.randomUUID(),
       titulo: comidaSolicitada.charAt(0).toUpperCase() + comidaSolicitada.slice(1),
       fecha: new Date().toLocaleDateString(),
-      receta,
+      receta: receta,
+      video:video
     };
 
     const nuevoHistorial = [nuevaConversacion, ...historial];

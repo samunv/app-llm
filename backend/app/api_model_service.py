@@ -41,7 +41,6 @@ def generar_respuesta_ia(datos_solicitud: SolicitudReceta):
     # Intentamos extraer JSON de receta
     return extraer_formato_respuesta(respuesta=respuesta)
 
-
 def _obtener_messages_con_historial(datos_solicitud: SolicitudReceta):
     """
     Transforma el historial y la nueva solicitud al formato 'messages' 

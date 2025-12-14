@@ -20,6 +20,7 @@ export const enviarReceta = async (
   }
 
   console.log("Enviando >>> ", solicitudReceta);
+  solicitudReceta.comida = "Prepara una receta para " + solicitudReceta?.comida  + " con las especificaciones seleccionadas.";
 
   try {
     const response = await fetch("http://127.0.0.1:5000/api/ia", {

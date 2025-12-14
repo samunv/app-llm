@@ -2,7 +2,7 @@ from pydantic import BaseModel
 from typing import List, Optional # Usamos typing para las listas
 class Ingrediente(BaseModel):
     nombre: str
-    cantidad: str
+    cantidad: str | float
     unidadMedida: Optional[str] = ""
 
 class Receta(BaseModel):

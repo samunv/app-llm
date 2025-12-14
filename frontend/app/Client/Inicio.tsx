@@ -28,11 +28,12 @@ import { Conversacion } from "../interfaces/Conversacion";
 import { MensajeChat } from "../interfaces/MensajeChat";
 import { FaInfoCircle } from "react-icons/fa";
 import Image from "next/image";
+import { VideoInfo } from "../interfaces/VideoInfo";
 
 export default function Inicio() {
   // Contextos
   const { solicitudReceta, updateSolicitudReceta } = useSolicitudReceta();
-  const { updateEspecificaciones, setEspecificaciones } = useEspecificaciones();
+  const { especificaciones, updateEspecificaciones, setEspecificaciones } = useEspecificaciones();
 
   // Hooks
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -140,7 +141,8 @@ export default function Inicio() {
         if (data.tipo === "receta") {
           guardarConversacion(
             data.respuesta as Receta,
-            textoInput || "Receta generada"
+            textoInput || "Receta generada",
+            data.video ? data.video as VideoInfo : null
           );
         }
       } else {
@@ -178,6 +180,7 @@ export default function Inicio() {
         rol: "ia",
         tipo: "receta",
         contenido: conv.receta,
+        video: conv.video ? conv.video : null
       },
     ]);
     if (typeof window !== "undefined" && window.innerWidth < 768) {
@@ -521,13 +524,12 @@ export default function Inicio() {
               style={{ backgroundColor: modeloSeleccionado.color }}
             >
               {modeloSeleccionado.recomendado && (
-                <div className="absolute -top-1 -right-1 bg-yellow-400 text-[white] text-[9px] font-bold px-1.5 py-0.5 rounded-full shadow-sm">
+                <div className="absolute -top-2 -right-1 bg-yellow-500 text-[white] text-[9px] font-bold px-1.5 py-0.5 rounded-full shadow-sm">
                   Recomendado
                 </div>
               )}
               <div
-                className="p-1.5 bg-white rounded-lg backdrop-blur-sm flex-shrink-0"
-                style={{ color: modeloSeleccionado.color }}
+                className="p-1. rounded-lg backdrop-blur-sm flex-shrink-0"
               >
                 {modeloSeleccionado.icono}
               </div>
@@ -535,9 +537,7 @@ export default function Inicio() {
                 <div className="text-xs font-bold leading-tight truncate">
                   {modeloSeleccionado.nombre}
                 </div>
-                <div className="text-[10px] opacity-90 leading-tight truncate">
-                  {modeloSeleccionado.version}
-                </div>
+                
               </div>
               <FaChevronDown
                 className={`text-xs transition-transform duration-300 flex-shrink-0 ${
@@ -597,26 +597,24 @@ export default function Inicio() {
 
           <input
             type="text"
+            readOnly={true}
+            required={true}
+
             placeholder={
               chatLog.length > 0
-                ? "Pregunta sobre la receta"
+                ? "¿Peparamos otra receta?"
                 : "¿Qué vamos a preparar hoy?"
             }
             className="flex-1 outline-none text-base bg-transparent px-2 text-gray-700 placeholder-gray-400"
-            value={solicitudReceta?.comida ?? ""}
+            value={solicitudReceta?.comida ? "Prepara una receta para " + solicitudReceta.comida+ "." : ""}
+            onClick={()=>setMostrarFormEspecificaciones(true)}
             onChange={(e) =>
               updateSolicitudRecetaCallback("comida", e.target.value)
             }
             onKeyDown={(e) => e.key === "Enter" && handleEnviar()}
           />
 
-          <IoIosAddCircle
-            size={25}
-            className="text-gray-400 hover:text-[#E67E22] transition-colors cursor-pointer"
-            onClick={() => setMostrarFormEspecificaciones(true)}
-          />
-
-          {modeloSeleccionado.id != modelosLLM[2].id && (
+          {modeloSeleccionado.id == modelosLLM[0].id && (
             <div>
               {imagenPreview ? (
                 <div className="relative group w-10 h-10">
@@ -664,7 +662,7 @@ export default function Inicio() {
           </button>
         </div>
 
-        {modeloSeleccionado.id == modelosLLM[2].id && chatLog.length == 0 && (
+        {/* {chatLog.length == 0 && (
           <div className="flex flex-row items-center justify-center text-orange-500 bg-[#FFEDD4] rounded-xl px-2 mt-10">
             <FaInfoCircle />
             <p className="p-4">
@@ -673,7 +671,7 @@ export default function Inicio() {
               equipo para continuar.
             </p>
           </div>
-        )}
+        )} */}
 
         {/* Modales */}
         {mostrarFormEspecificaciones && (

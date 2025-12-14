@@ -15,7 +15,22 @@ def obtener_instrucciones(datos_solicitud: SolicitudReceta):
     objetivo = especificaciones.objetivo or "Ninguno"
     ingredientes_disponibles = especificaciones.ingredientes_disponibles or "Ninguno"
 
-    return f"""
+    if not _filtrar_palabras_clave(comida):
+        return "Debes indicar al usuario amablemente, que solicite una receta de comida."
+    else:
+        JSON_RECETA_FORMATO = """
+{
+  "nombrePlato": "Nombre del plato",
+  "ingredientes": [
+    { "nombre": "Ingrediente 1", "cantidad": "Cantidad 1 (solo número)", "unidadMedida": "Unidad 1" },
+    { "nombre": "Ingrediente 2", "cantidad": "Cantidad 2 (solo número)", "unidadMedida": "Unidad 2" }
+  ],
+  "pasos": ["Paso 1", "Paso 2"],
+  "especificaciones": "Texto con restricciones de la dieta o notas especiales."
+}
+"""
+
+        return f"""
 ROL Y OBJETIVO
 Eres ChefGPT, un asistente experto en cocina. Tu función principal es generar recetas y responder preguntas sobre la ÚLTIMA receta que generaste.
 
@@ -27,15 +42,7 @@ FORMATO DE RESPUESTA
 
 
 // ESTRUCTURA JSON (OBLIGATORIA)
-{{{{
-    "nombrePlato": "Nombre del plato",
-    "ingredientes": [
-        {{"nombre": "Ingrediente 1", "cantidad": "Cantidad 1", "unidadMedida": "Unidad 1"}}, 
-        {{"nombre": "Ingrediente 2", "cantidad": "Cantidad 2", "unidadMedida": "Unidad 2"}}
-    ],
-    "pasos": ["Paso 1", "Paso 2"],
-    "especificaciones": "Texto con restricciones de la dieta o notas especiales."
-}}}}
+{JSON_RECETA_FORMATO}
 
 CONTEXTO DE LA SOLICITUD
 PROMPT ACTUAL: {comida}
@@ -46,9 +53,19 @@ ESPECIFICACIONES DEL USUARIO:
 - Ingredientes personalizados añadidos: {ingredientes_disponibles}
 """
 
+
+
+ 
+def _filtrar_palabras_clave(texto: str) -> bool:
+    palabras_clave = ["receta", "ingredientes", "preparar", "cocinar", "plato", "comida", "cómo hacer", "instrucciones", "pasos"]
+    texto_lower = texto.lower()
+    if any(palabra in texto_lower for palabra in palabras_clave):
+        return True
+    return False
+
 def extraer_formato_respuesta(respuesta:str) -> Receta | str:
     try:
-        json_str = respuesta
+        json_str = _extraerJSON(respuesta)
         
         # Intenta validar y construir el objeto Receta directamente desde el JSON
         receta_obj = Receta.model_validate_json(json_str) 
@@ -67,3 +84,13 @@ def extraer_formato_respuesta(respuesta:str) -> Receta | str:
 
 
     return respuesta
+
+def _extraerJSON(texto: str) -> str:
+    # Versión robusta para aislar el JSON
+    texto_limpio = texto.strip().replace("```json", "").replace("```", "").strip()
+    inicio = texto_limpio.find('{')
+    fin = texto_limpio.rfind('}')
+    
+    if inicio == -1 or fin == -1 or inicio >= fin:
+        return "{}"
+    return texto_limpio[inicio : fin + 1]

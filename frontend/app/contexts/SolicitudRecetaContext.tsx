@@ -32,7 +32,7 @@ export const SolicitudRecetaProvider = ({
   const [solicitudReceta, setSolicitudReceta] =
     useState<SolicitudReceta | null>(null);
 
-  const [modeloSeleccionadoID, setModeloSeleccionadoID] = useState<string>("gemini-2.5-flash");
+  const [modeloSeleccionadoID, setModeloSeleccionadoID] = useState<string>("llama-3.1-8b-instant");
 
   const updateSolicitudReceta = useCallback(
     (claveActualizar: string, valorActualizar: string | Especificaciones) => {
@@ -40,9 +40,14 @@ export const SolicitudRecetaProvider = ({
         if (!solicitudPrevia) {
           return {
             [claveActualizar]: valorActualizar as string,
-            comida: "",
+            comida: "Paella",
             modeloIASeleccionado: modeloSeleccionadoID,
-            especificaciones: {},
+            especificaciones: {
+              tipo_dieta: "Normal",
+              restricciones: "Ninguna",
+              objetivo: "Ninguno",
+              ingredientes_disponibles: "Ninguno",
+            },
             tipoImagen: "",
             imagen: "",
           };
