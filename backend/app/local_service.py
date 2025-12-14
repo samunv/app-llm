@@ -6,7 +6,7 @@ from app.utils import obtener_instrucciones, extraer_formato_respuesta
 from app.models import SolicitudReceta
 
 # Inicialización de ChatOllama
-llm = ChatOllama(model="llama3:8b", temperature=0.2)
+llm = ChatOllama(model="gemma:7b", temperature=0.2)
 
 def _obtener_prompt_template(instrucciones: str) -> ChatPromptTemplate:
     return ChatPromptTemplate.from_messages(

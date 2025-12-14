@@ -1,5 +1,6 @@
 from flask import Flask, request, jsonify, make_response
-from app.gemini_service import generar_respuesta_ia
+# from app.gemini_service import generar_respuesta_ia
+from app.api_model_service import generar_respuesta_ia
 from app.models.Especificaciones import Especificaciones
 from app.models.SolicitudReceta import SolicitudReceta
 from app.local_service import generar_respuesta_ia_local
@@ -74,13 +75,10 @@ def _generar_y_obtener_respuesta(modeloSeleccionado: str, solicitudRecetaObj: So
 
 
 
-
-
-
 def _json_respuesta(respuesta_ia: Receta | str, video: VideoInfo = None):
 
-    if hasattr(respuesta_ia, "to_dict"):
-        respuesta_ia = respuesta_ia.to_dict()
+    if isinstance(respuesta_ia, Receta):
+        respuesta_ia_dict = respuesta_ia.model_dump() 
         tipo_respuesta = "receta"
     elif isinstance(respuesta_ia, dict) and "error" in respuesta_ia:
         # Caso de error {"error": "..."}
@@ -90,7 +88,7 @@ def _json_respuesta(respuesta_ia: Receta | str, video: VideoInfo = None):
         tipo_respuesta = "chat"
         
     return jsonify({
-            "respuesta": respuesta_ia,
+            "respuesta": respuesta_ia_dict if isinstance(respuesta_ia, Receta) else respuesta_ia,
             "tipo": tipo_respuesta,
             "estado": "exito",
             "video": video.to_dict() if video else None

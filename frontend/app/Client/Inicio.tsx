@@ -396,7 +396,7 @@ export default function Inicio() {
                             </h2>
                             <ul className="list-disc pl-5 space-y-1">
                               {r.ingredientes?.map((ingrediente, index) => (
-                                <li key={index}>{ingrediente}</li>
+                                <li key={index}>{ingrediente.cantidad} {ingrediente.unidadMedida} de {ingrediente.nombre}</li>
                               ))}
                             </ul>
 

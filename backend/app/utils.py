@@ -1,19 +1,25 @@
 from app.models.SolicitudReceta import SolicitudReceta
 from app.models.Especificaciones import Especificaciones
 from app.models.Receta import Receta
+from app.models.Receta import Ingrediente
 import json
 import re
+from pydantic import ValidationError, BaseModel
+
 
 def obtener_instrucciones(datos_solicitud: SolicitudReceta):
     comida = datos_solicitud.comida or ""
     especificaciones = datos_solicitud.especificaciones or Especificaciones()
+    tipo_dieta = especificaciones.tipo_dieta or "Ninguna"
+    restricciones = especificaciones.restricciones or "Ninguna"
+    objetivo = especificaciones.objetivo or "Ninguno"
+    ingredientes_disponibles = especificaciones.ingredientes_disponibles or "Ninguno"
 
-    # Usar CUATRO llaves ({{{{ y }}}} ) para escapar el bloque JSON
     return f"""
-// ROL Y OBJETIVO
+ROL Y OBJETIVO
 Eres ChefGPT, un asistente experto en cocina. Tu función principal es generar recetas y responder preguntas sobre la ÚLTIMA receta que generaste.
 
-// FORMATO DE RESPUESTA
+FORMATO DE RESPUESTA
 1. Si el usuario pide una receta, DEVUELVE SOLO el JSON solicitado. NO añadas texto antes ni después.
 2. Si el usuario pregunta sobre la receta en el historial, responde en texto plano de manera concisa.
 3. Si el usuario pregunta por algo que no es comida o ingredientes, o no hay receta en el historial, pide amablemente que solicite una receta.
@@ -23,48 +29,41 @@ Eres ChefGPT, un asistente experto en cocina. Tu función principal es generar r
 // ESTRUCTURA JSON (OBLIGATORIA)
 {{{{
     "nombrePlato": "Nombre del plato",
-    "ingredientes": ["Ingrediente 1", "Ingrediente 2"],
+    "ingredientes": [
+        {{"nombre": "Ingrediente 1", "cantidad": "Cantidad 1", "unidadMedida": "Unidad 1"}}, 
+        {{"nombre": "Ingrediente 2", "cantidad": "Cantidad 2", "unidadMedida": "Unidad 2"}}
+    ],
     "pasos": ["Paso 1", "Paso 2"],
     "especificaciones": "Texto con restricciones de la dieta o notas especiales."
 }}}}
 
-// CONTEXTO DE LA SOLICITUD 
-PROMPT ACTUAL: "{comida}"
+CONTEXTO DE LA SOLICITUD
+PROMPT ACTUAL: {comida}
 ESPECIFICACIONES DEL USUARIO:
-- Dieta: "{especificaciones.tipo_dieta}"
-- Restricciones: "{especificaciones.restricciones}"
-- Objetivo: "{especificaciones.objetivo}"
-- Ingredientes personalizados añadidos: "{especificaciones.ingredientes_disponibles}"
+- Dieta: {tipo_dieta}
+- Restricciones: {restricciones}
+- Objetivo: {objetivo}
+- Ingredientes personalizados añadidos: {ingredientes_disponibles}
 """
 
-
-def extraer_formato_respuesta(respuesta:str)->Receta | str:
+def extraer_formato_respuesta(respuesta:str) -> Receta | str:
     try:
-        json_str = _extraerJSON(respuesta)
-        json_receta = json.loads(json_str)
-
-        if isinstance(json_receta, dict) and "nombrePlato" in json_receta:
-            return Receta(
-                json_receta.get("nombrePlato"),
-                json_receta.get("ingredientes"),
-                json_receta.get("pasos"),
-                json_receta.get("especificaciones", "")
-            )
+        json_str = respuesta
+        
+        # Intenta validar y construir el objeto Receta directamente desde el JSON
+        receta_obj = Receta.model_validate_json(json_str) 
+        
+        # Si es exitoso (el JSON está limpio y los datos son correctos), devuelve el objeto
+        return receta_obj
+        
+    except ValidationError as e:
+        print(f"Error de validación Pydantic (Datos incorrectos): {e}")
+        
+    except json.JSONDecodeError as e:
+        print(f"Error al decodificar JSON (sintaxis mala del LLM): {e}")
+        
     except Exception as e:
-        print("Error al extraer receta:", e)
+        print(f"Error desconocido: {e}")
 
-    # Devuelve texto plano si no hay JSON válido
-    return respuesta 
 
-def _extraerJSON(texto):
-    """
-    Extrae el primer bloque JSON válido encontrado en 'texto'.
-    Devuelve '{}' si no se encuentra nada válido.
-    """
-    # Buscar cualquier bloque entre llaves {...} incluyendo saltos de línea
-    match = re.search(r"\{.*?\}", texto, re.DOTALL)
-    if match:
-        return match.group()
-    else:
-        # Devuelve JSON vacío para que json.loads nunca falle
-        return "{}"
+    return respuesta
