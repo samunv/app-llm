@@ -40,14 +40,9 @@ export const SolicitudRecetaProvider = ({
         if (!solicitudPrevia) {
           return {
             [claveActualizar]: valorActualizar as string,
-            comida: "Paella",
+            comida: "Prepara una receta para Paella.",
             modeloIASeleccionado: modeloSeleccionadoID,
-            especificaciones: {
-              tipo_dieta: "Normal",
-              restricciones: "Ninguna",
-              objetivo: "Ninguno",
-              ingredientes_disponibles: "Ninguno",
-            },
+            especificaciones: { },
             tipoImagen: "",
             imagen: "",
           };

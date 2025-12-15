@@ -25,7 +25,7 @@ def generar_respuesta_ia(datos_solicitud: SolicitudReceta):
         return {"error": "Falta la API Key en el archivo .env o es inválida"}
 
     # Usamos el modelo seleccionado o un valor predeterminado compatible con Groq.
-    modelo_id = datos_solicitud.modeloIASeleccionado or "llama3-8b-8192" 
+    modelo_id = datos_solicitud.modeloIASeleccionado or "llama-3.1-8b-instant" 
 
     messages = _obtener_messages_con_historial(datos_solicitud=datos_solicitud)
     system_prompt = obtener_instrucciones(datos_solicitud)

@@ -9,7 +9,11 @@ import {
   FaImage,
   FaUser,
 } from "react-icons/fa6";
-import { IoIosAddCircle, IoMdInformationCircle } from "react-icons/io";
+import {
+  IoIosAddCircle,
+  IoMdAddCircle,
+  IoMdInformationCircle,
+} from "react-icons/io";
 
 import "./Inicio.css";
 import { useSolicitudReceta } from "../contexts/SolicitudRecetaContext";
@@ -33,7 +37,8 @@ import { VideoInfo } from "../interfaces/VideoInfo";
 export default function Inicio() {
   // Contextos
   const { solicitudReceta, updateSolicitudReceta } = useSolicitudReceta();
-  const { especificaciones, updateEspecificaciones, setEspecificaciones } = useEspecificaciones();
+  const { especificaciones, updateEspecificaciones, setEspecificaciones } =
+    useEspecificaciones();
 
   // Hooks
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -85,10 +90,19 @@ export default function Inicio() {
       rol: "usuario",
       tipo: "texto",
       contenido:
-        textoInput ||
+        verificarTexto(textoInput as string) ||
         (imagenInput ? "Haz una receta para el contenido de la imagen" : ""),
       imagen: imagenPreview ? imagenPreview : "",
     };
+
+    function verificarTexto(texto: string): string  {
+      if (!texto.toLowerCase().startsWith("prepara una receta para")) {
+        // El texto **NO empieza** con "prepara una receta para"
+        return "Prepara una receta para: " + texto
+      } else {
+        return texto
+      }
+    }
 
     // Vaciar especificaciones y datos
     setEspecificaciones({});
@@ -116,7 +130,7 @@ export default function Inicio() {
       // 3. Playload
       const playload = {
         ...solicitudReceta,
-        comida: textoInput || "",
+        comida: verificarTexto(textoInput as string) || "",
         historial: historialBackend,
         modeloIASeleccionado:
           solicitudReceta?.modeloIASeleccionado || "gemini-2.5-flash",
@@ -142,7 +156,7 @@ export default function Inicio() {
           guardarConversacion(
             data.respuesta as Receta,
             textoInput || "Receta generada",
-            data.video ? data.video as VideoInfo : null
+            data.video ? (data.video as VideoInfo) : null
           );
         }
       } else {
@@ -180,7 +194,7 @@ export default function Inicio() {
         rol: "ia",
         tipo: "receta",
         contenido: conv.receta,
-        video: conv.video ? conv.video : null
+        video: conv.video ? conv.video : null,
       },
     ]);
     if (typeof window !== "undefined" && window.innerWidth < 768) {
@@ -399,7 +413,11 @@ export default function Inicio() {
                             </h2>
                             <ul className="list-disc pl-5 space-y-1">
                               {r.ingredientes?.map((ingrediente, index) => (
-                                <li key={index}>{ingrediente.cantidad} {ingrediente.unidadMedida} de {ingrediente.nombre}</li>
+                                <li key={index}>
+                                  {ingrediente.cantidad}{" "}
+                                  {ingrediente.unidadMedida} de{" "}
+                                  {ingrediente.nombre}
+                                </li>
                               ))}
                             </ul>
 
@@ -446,7 +464,7 @@ export default function Inicio() {
                 )}
               </div>
               {/* TODO: VIDEO (Si existe) */}
-              
+
               {msg.video ? (
                 <div className="w-full mt-5">
                   <p className="text-gray-500">También podría interesarte:</p>
@@ -470,7 +488,12 @@ export default function Inicio() {
                           ? msg.video.titulo.substring(0, 25) + "..."
                           : msg.video.titulo}
                       </h2>
-                      <p className="text-[14px]">De {msg.video.nombre_canal.length >= 25 ? msg.video.nombre_canal.substring(0, 25) + "..." : msg.video.nombre_canal}</p>
+                      <p className="text-[14px]">
+                        De{" "}
+                        {msg.video.nombre_canal.length >= 25
+                          ? msg.video.nombre_canal.substring(0, 25) + "..."
+                          : msg.video.nombre_canal}
+                      </p>
 
                       <p className="mt-1 text-[12px] flex flex-row items-center justify-center gap-1 bg-[#E5E7EB] text-[#99A1AF] font-bold p-1 px-3 rounded-4xl">
                         Ver en YouTube
@@ -528,16 +551,13 @@ export default function Inicio() {
                   Recomendado
                 </div>
               )}
-              <div
-                className="p-1. rounded-lg backdrop-blur-sm flex-shrink-0"
-              >
+              <div className="p-1. rounded-lg backdrop-blur-sm flex-shrink-0">
                 {modeloSeleccionado.icono}
               </div>
               <div className="flex-1 text-left min-w-0 hidden sm:block">
                 <div className="text-xs font-bold leading-tight truncate">
                   {modeloSeleccionado.nombre}
                 </div>
-                
               </div>
               <FaChevronDown
                 className={`text-xs transition-transform duration-300 flex-shrink-0 ${
@@ -597,22 +617,27 @@ export default function Inicio() {
 
           <input
             type="text"
-            readOnly={true}
             required={true}
-
             placeholder={
               chatLog.length > 0
                 ? "¿Peparamos otra receta?"
                 : "¿Qué vamos a preparar hoy?"
             }
             className="flex-1 outline-none text-base bg-transparent px-2 text-gray-700 placeholder-gray-400"
-            value={solicitudReceta?.comida ? "Prepara una receta para " + solicitudReceta.comida+ "." : ""}
-            onClick={()=>setMostrarFormEspecificaciones(true)}
+            value={solicitudReceta?.comida ? solicitudReceta?.comida : ""}
             onChange={(e) =>
               updateSolicitudRecetaCallback("comida", e.target.value)
             }
             onKeyDown={(e) => e.key === "Enter" && handleEnviar()}
           />
+
+          <div>
+            <IoMdAddCircle
+              size={28}
+              className="text-gray-400 hover:text-orange-500 cursor-pointer"
+              onClick={() => setMostrarFormEspecificaciones(true)}
+            />
+          </div>
 
           {modeloSeleccionado.id == modelosLLM[0].id && (
             <div>

@@ -9,6 +9,7 @@ from app.models.Receta import Receta
 from app.youtube_api_service import obtener_video_youtube
 from app.models.VideoInfo import VideoInfo
 import uuid
+from app.utils import filtrar_palabras_clave
 
 app = Flask(__name__)
 
@@ -58,12 +59,15 @@ def _verificar_token_cookies(response):
 
 def _generar_y_obtener_respuesta(modeloSeleccionado: str, solicitudRecetaObj: SolicitudReceta):
     respuesta_ia = ""
-
-    if modeloSeleccionado != "llama3:8b":
+    # if modeloSeleccionado != "llama3:8b":
+    respuesta_ia = ""
+    if filtrar_palabras_clave(solicitudRecetaObj.comida):
         respuesta_ia = generar_respuesta_ia(solicitudRecetaObj)
-
     else:
-        respuesta_ia = generar_respuesta_ia_local(solicitudRecetaObj)
+        respuesta_ia = "Por favor, solicita una receta de comida para que pueda ayudarte."
+
+    # else:
+    #     respuesta_ia = generar_respuesta_ia_local(solicitudRecetaObj)
 
     # TODO: Lógica para obtener video:
     if isinstance(respuesta_ia, Receta):

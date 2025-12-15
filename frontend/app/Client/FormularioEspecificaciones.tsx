@@ -80,7 +80,7 @@ export default function FormularioEspecificaciones({ cerrar }: Props) {
           <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-orange-50 text-[#E67E22] mb-4 shadow-inner">
             <IoSparkles size={26} />
           </div>
-          <h2 className="text-3xl text-[#343A40] mb-1">Crea tu receta</h2>
+          <h2 className="text-3xl text-[#343A40] mb-1">Personaliza tu receta</h2>
           <p className="text-[gray] text-sm">
             Personaliza la receta para ti
           </p>
@@ -89,27 +89,7 @@ export default function FormularioEspecificaciones({ cerrar }: Props) {
         {/* Campos del Formulario */}
         <div className="p-8 space-y-5 overflow-y-scroll max-h-[270px]">
           {/* Input: Tipo de Dieta */}
-                    <div className="group">
-            <label
-              htmlFor="tipo_dieta"
-              className="block text-sm font-semibold text-[#343A40] mb-1.5 ml-1"
-            >
-              Plato de comida a preparar
-            </label>
-            <div className="relative transition-all duration-300 focus-within:transform focus-within:scale-[1.02]">
-              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
-                <FaBowlFood className="text-[gray] group-focus-within:text-[#E67E22] transition-colors" />
-              </div>
-              <input
-                type="text"
-                id="tipo_dieta"
-                placeholder="Ej: Paella, lasaña..."
-                className="block w-full pl-10 pr-4 py-3 bg-[white] border border-[gray] rounded-xl text-[#343A40] placeholder-[gray] focus:outline-none focus:bg-white focus:border-[#E67E22] focus:ring-4 focus:ring-[#E67E22]/10 transition-all"
-                value={solicitudReceta?.comida}
-                onChange={(e) => handleUpdateComida("comida", e.target.value)}
-              />
-            </div>
-          </div>
+                   
           <div className="group">
             <label
               htmlFor="tipo_dieta"

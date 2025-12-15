@@ -5,7 +5,7 @@ import { VideoInfo } from "@/app/interfaces/VideoInfo";
 // Definimos la nueva estructura de respuesta del Backend
 export interface RespuestaBackend {
   respuesta: Receta | string | "error";
-  video: VideoInfo,
+  video: VideoInfo;
   tipo: "receta" | "chat" | "error";
   estado: string;
   error?: string;
@@ -15,12 +15,11 @@ export const enviarReceta = async (
   solicitudReceta: SolicitudReceta
 ): Promise<RespuestaBackend> => {
   if (!solicitudReceta?.comida && !solicitudReceta.imagen) {
-     // Permitimos enviar si hay imagen o texto (antes solo texto)
-     // Si quieres ser estricto con el texto, descomenta la validación anterior
+    // Permitimos enviar si hay imagen o texto (antes solo texto)
+    // Si quieres ser estricto con el texto, descomenta la validación anterior
   }
 
   console.log("Enviando >>> ", solicitudReceta);
-  solicitudReceta.comida = "Prepara una receta para " + solicitudReceta?.comida  + " con las especificaciones seleccionadas.";
 
   try {
     const response = await fetch("http://127.0.0.1:5000/api/ia", {
