@@ -19,7 +19,7 @@ def obtener_video_youtube(busqueda: str)->VideoInfo | None:
 
         params = {
         'part': 'snippet',
-        'q': busqueda_receta,
+        'q': "Receta " + busqueda_receta,
         'type': 'video',
         'maxResults': 1,
         'key': api_key

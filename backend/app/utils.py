@@ -6,16 +6,7 @@ import json
 import re
 from pydantic import ValidationError, BaseModel
 
-
-def obtener_instrucciones(datos_solicitud: SolicitudReceta):
-    comida = datos_solicitud.comida or ""
-    especificaciones = datos_solicitud.especificaciones or Especificaciones()
-    tipo_dieta = especificaciones.tipo_dieta or "Ninguna"
-    restricciones = especificaciones.restricciones or "Ninguna"
-    objetivo = especificaciones.objetivo or "Ninguno"
-    ingredientes_disponibles = especificaciones.ingredientes_disponibles or "Ninguno"
-
-    JSON_RECETA_FORMATO = """
+JSON_RECETA_OUTPUT = """
 {
   "nombrePlato": "Nombre del plato",
   "ingredientes": [
@@ -26,6 +17,15 @@ def obtener_instrucciones(datos_solicitud: SolicitudReceta):
   "especificaciones": "Texto con restricciones de la dieta o notas especiales."
 }
 """
+
+
+def obtener_instrucciones(datos_solicitud: SolicitudReceta):
+    prompt = datos_solicitud.prompt or ""
+    especificaciones = datos_solicitud.especificaciones or Especificaciones()
+    tipo_dieta = especificaciones.tipo_dieta or "Ninguna"
+    restricciones = especificaciones.restricciones or "Ninguna"
+    objetivo = especificaciones.objetivo or "Ninguno"
+    ingredientes_disponibles = especificaciones.ingredientes_disponibles or "Ninguno"
 
     return f"""
 ROL Y OBJETIVO
@@ -39,27 +39,20 @@ FORMATO DE RESPUESTA
 
 
 // ESTRUCTURA JSON (OBLIGATORIA)
-OUTPUT ESPERADO PARA LAS RECETAS: {JSON_RECETA_FORMATO}
+OUTPUT ESPERADO PARA LAS RECETAS: {JSON_RECETA_OUTPUT}
 
 CONTEXTO DE LA SOLICITUD
-PROMPT O INPUT DEL USUARIO: << {comida} >> Si el usuario pide algo que no sea sobre comida, responde EXACTAMENTE:
+PROMPT O INPUT DEL USUARIO: << {prompt + ". Dieta: " + tipo_dieta + "; Restricciones: " + restricciones + "; Objetivos: " + objetivo + "; Añade ingredientes personalizados como: (si los hay) " + ingredientes_disponibles} >> Si el usuario pide algo que no sea sobre comida, responde EXACTAMENTE:
 "Solo puedo ayudarte con recetas de cocina." No generes recetas sobre personas, deportes, política o cualquier otro tema.
-ESPECIFICACIONES DEL USUARIO:
-- Dieta: {tipo_dieta}
-- Restricciones: {restricciones}
-- Objetivo: {objetivo}
-- Ingredientes personalizados añadidos: {ingredientes_disponibles}
 """
 
 
-
- 
 def filtrar_palabras_clave(texto: str) -> bool:
-    palabras_clave = ["prepara una receta para", "dame una receta de"]
+    palabras_clave = ["receta", "prepara", "https://www.youtube.com/watch?v="]
     texto_lower = texto.lower()
-    if any(palabra in texto_lower for palabra in palabras_clave):
-        return True
-    return False
+    return any(texto_lower.startswith(palabra) for palabra in palabras_clave)
+
+
 
 def extraer_formato_respuesta(respuesta:str) -> Receta | str:
     try:
@@ -87,3 +80,15 @@ def _extraerJSON(texto: str) -> str:
     if inicio == -1 or fin == -1 or inicio >= fin:
         return "{}"
     return texto_limpio[inicio : fin + 1]
+
+def extraer_video_id(prompt: str) -> str | None:
+    if not prompt:
+        return None
+    patron_regex = r'https://www\.youtube\.com/watch\?v=([\w-]{11}).*' 
+
+    match_url = re.search(patron_regex, prompt)
+
+    if match_url:
+        # El grupo de captura 1 sigue conteniendo solo el ID de 11 caracteres
+        return match_url.group(1)
+    return None

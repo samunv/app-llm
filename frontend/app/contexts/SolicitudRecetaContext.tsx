@@ -40,7 +40,7 @@ export const SolicitudRecetaProvider = ({
         if (!solicitudPrevia) {
           return {
             [claveActualizar]: valorActualizar as string,
-            comida: "Prepara una receta para Paella.",
+            prompt: "",
             modeloIASeleccionado: modeloSeleccionadoID,
             especificaciones: { },
             tipoImagen: "",

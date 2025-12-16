@@ -1,6 +1,8 @@
 import { Conversacion } from "@/app/interfaces/Conversacion";
 import { FaPlus, FaTrash, FaMessage, FaBars, FaXmark, FaGear } from "react-icons/fa6";
 import { IoSparkles } from "react-icons/io5";
+import BotonGeneral from "./BotonGeneral";
+import Image from 'next/image';
 
 type Props = {
   isOpen: boolean;
@@ -108,16 +110,21 @@ export default function Sidebar({
           </div>
         </div>
 
-        
-        {/* <div className="p-4 border-t border-gray-100 bg-gray-50/50">
-          <button
-            onClick={()=>{}}
-            className="w-full flex items-center gap-3 p-2 text-sm text-gray-600 hover:text-[#E67E22] hover:bg-white rounded-lg transition-all font-medium group cursor-pointer"
-          >
-            <MdLocalFireDepartment className=" transition-transform duration-500" size={20}/>
-            <span></span>
-          </button>
-        </div> */}
+        <div className="mt-4 mb-4 mx-6 flex flex-row ">
+          {!localStorage.getItem("usuario") ? (
+          <div className="p-2 bg-gray-100 flex flex-row items-center gap-3 flex-1 rounded-xl border border-gray-300 cursor-pointer">
+            <img src="https://i.pinimg.com/736x/6c/eb/75/6ceb75052855a7c75e8134396f801f64.jpg" alt="Logo" width={50} height={50} className="rounded-[100%] object-cover border border-gray-400"/>
+            <div className=" flex flex-col items-start text-[14px]">
+              <strong>Nombre usuario</strong>
+              <p>usuario@email.com</p>
+            </div>
+          </div>) :
+          
+        (<div className="flex-1 flex flex-col items-center">
+          <BotonGeneral texto="Iniciar Sesión" onClick={()=>{}}></BotonGeneral>
+        </div>)}
+        </div>
+       
       </div>
 
 

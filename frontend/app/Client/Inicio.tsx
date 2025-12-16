@@ -30,9 +30,10 @@ import Sidebar from "./components/Sidebar";
 import { useHistorial } from "../hooks/useHistorial";
 import { Conversacion } from "../interfaces/Conversacion";
 import { MensajeChat } from "../interfaces/MensajeChat";
-import { FaInfoCircle } from "react-icons/fa";
+import { FaExclamationTriangle, FaInfoCircle } from "react-icons/fa";
 import Image from "next/image";
 import { VideoInfo } from "../interfaces/VideoInfo";
+import Caracteristicas from "./components/Caracteristicas";
 
 export default function Inicio() {
   // Contextos
@@ -43,6 +44,8 @@ export default function Inicio() {
   // Hooks
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const { historial, guardarConversacion, borrarConversacion } = useHistorial();
+
+  const palabrasClave = ["receta", "prepara", "https://www.youtube.com/watch?v="];
 
   // Estados UI
   const [isOpen, setIsOpen] = useState(false);
@@ -56,6 +59,10 @@ export default function Inicio() {
   // Estados Chat
   const [chatLog, setChatLog] = useState<MensajeChat[]>([]);
   const [cargando, setCargando] = useState<boolean>(false);
+
+  const [mensajeError, setMensajeError] = useState<string>("");
+
+  const [mostrarError, setMostrarError] = useState<boolean>(false);
 
   // Refs
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -77,9 +84,21 @@ export default function Inicio() {
     }
   }, [chatLog, cargando]);
 
+  function handleVerificarInput(valorInput: string) {
+    const texto = valorInput.toLowerCase();
+
+    const esValido = palabrasClave.some((palabra) => texto.startsWith(palabra));
+
+    if (!esValido) {
+      setMensajeError("El mensaje debe iniciar con 'receta' o 'prepara'; o ser un enlace válido de vídeo de Receta de YouTube.");
+    } else {
+      setMensajeError("");
+    }
+  }
+
   // --- LÓGICA DE ENVÍO ---
   const handleEnviar = async () => {
-    const textoInput = solicitudReceta?.comida;
+    const textoInput = solicitudReceta?.prompt;
     const imagenInput = solicitudReceta?.imagen;
 
     if (!textoInput && !imagenInput) return;
@@ -90,19 +109,10 @@ export default function Inicio() {
       rol: "usuario",
       tipo: "texto",
       contenido:
-        verificarTexto(textoInput as string) ||
+        textoInput ||
         (imagenInput ? "Haz una receta para el contenido de la imagen" : ""),
       imagen: imagenPreview ? imagenPreview : "",
     };
-
-    function verificarTexto(texto: string): string  {
-      if (!texto.toLowerCase().startsWith("prepara una receta para")) {
-        // El texto **NO empieza** con "prepara una receta para"
-        return "Prepara una receta para: " + texto
-      } else {
-        return texto
-      }
-    }
 
     // Vaciar especificaciones y datos
     setEspecificaciones({});
@@ -112,7 +122,7 @@ export default function Inicio() {
     const nuevoLog = [...chatLog, msgUsuario];
     setChatLog(nuevoLog);
     setCargando(true);
-    updateSolicitudRecetaCallback("comida", "");
+    updateSolicitudRecetaCallback("prompt", "");
 
     try {
       // 2. Historial para Backend
@@ -130,7 +140,7 @@ export default function Inicio() {
       // 3. Playload
       const playload = {
         ...solicitudReceta,
-        comida: verificarTexto(textoInput as string) || "",
+        prompt: textoInput || "",
         historial: historialBackend,
         modeloIASeleccionado:
           solicitudReceta?.modeloIASeleccionado || "gemini-2.5-flash",
@@ -204,7 +214,7 @@ export default function Inicio() {
 
   const handleNuevaConversacion = () => {
     setChatLog([]);
-    updateSolicitudRecetaCallback("comida", "");
+    updateSolicitudRecetaCallback("prompt", "");
     setImagenPreview(undefined);
     updateSolicitudReceta("imagen", "");
   };
@@ -336,6 +346,13 @@ export default function Inicio() {
             />
           </h1>
         )}
+
+        {chatLog.length === 0 && !cargando && (
+          <Caracteristicas />
+        )}
+
+
+
 
         {/* --- AREA CHAT --- */}
         <div className="w-full max-w-[750px] px-4 flex flex-col gap-8">
@@ -569,7 +586,7 @@ export default function Inicio() {
             {isOpen && (
               <div
                 className={`absolute left-0 w-[350px] max-h-[200px] overflow-y-auto bg-white rounded-2xl shadow-2xl border border-gray-200 z-50 animate-fadeIn p-2
-              ${chatLog.length > 0 ? "bottom-full mb-3" : "top-full mt-1"}
+              ${chatLog.length > 0 ? "bottom-full mb-3" : "bottom-full mt-3"}
               `}
               >
                 {modelosLLM.map((modelo) => (
@@ -624,12 +641,31 @@ export default function Inicio() {
                 : "¿Qué vamos a preparar hoy?"
             }
             className="flex-1 outline-none text-base bg-transparent px-2 text-gray-700 placeholder-gray-400"
-            value={solicitudReceta?.comida ? solicitudReceta?.comida : ""}
-            onChange={(e) =>
-              updateSolicitudRecetaCallback("comida", e.target.value)
+            value={
+              solicitudReceta?.prompt ?? ""
             }
+            onChange={(e) => {
+              updateSolicitudRecetaCallback("prompt", e.target.value);
+              handleVerificarInput(e.target.value);
+            }}
             onKeyDown={(e) => e.key === "Enter" && handleEnviar()}
           />
+
+          {mensajeError && (
+            <div
+              className="relative bg-yellow-100 text-yellow-600 text-[14px] px-4 py-2 rounded-xl flex items-center gap-2"
+              onMouseEnter={() => setMostrarError(true)}
+              onMouseLeave={()=>setMostrarError(false)}
+            >
+              <FaExclamationTriangle className="text-yellow-600" />
+              <span>Advertencia</span>
+              {mostrarError && (
+                <div className="absolute bottom-11 left-1/2 -translate-x-1/2 bg-yellow-100 text-yellow-00 px-4 py-2 rounded-xl shadow-lg w-max max-w-xs">
+                  {mensajeError}
+                </div>
+              )}
+            </div>
+          )}
 
           <div>
             <IoMdAddCircle
@@ -675,7 +711,7 @@ export default function Inicio() {
               handleEnviar();
             }}
             disabled={
-              cargando || (!solicitudReceta?.comida && !solicitudReceta?.imagen)
+              cargando || (!solicitudReceta?.prompt && !solicitudReceta?.imagen)
             }
             className={`bg-orange-500 hover:bg-orange-600 text-white p-3 rounded-xl transition-all shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center cursor-pointer`}
           >

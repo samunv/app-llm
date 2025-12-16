@@ -6,10 +6,12 @@ from app.models.SolicitudReceta import SolicitudReceta
 from app.local_service import generar_respuesta_ia_local
 from app.rate_limiter import rate_limiter
 from app.models.Receta import Receta
-from app.youtube_api_service import obtener_video_youtube
+from app.youtube_search_api_service import obtener_video_youtube
 from app.models.VideoInfo import VideoInfo
 import uuid
-from app.utils import filtrar_palabras_clave
+from app.utils import filtrar_palabras_clave, extraer_video_id
+from app.youtube_transcript_service import obtener_transcripcion
+from app.youtube_video_service import obtener_video_youtube_mediante_videoID
 
 app = Flask(__name__)
 
@@ -20,17 +22,17 @@ rate_limiter.init_app(app)
 def procesar_solicitud():
     try:
         datos = request.get_json()
-        modeloSeleccionado = datos.get('modeloIASeleccionado', '')
+        #modeloSeleccionado = datos.get('modeloIASeleccionado', '')
         especificacionesObj = Especificaciones(**datos.get("especificaciones", {}))
         solicitudRecetaObj = SolicitudReceta(
-            comida=datos.get('comida', ''),
+            prompt=datos.get('prompt', ''),
             modeloIASeleccionado=datos.get('modeloIASeleccionado', ''),
             imagen=datos.get('imagen', ''),
             tipoImagen=datos.get('tipoImagen',''),
             especificaciones=especificacionesObj or Especificaciones(),
             historial=datos.get('historial', []),
         )
-        response = make_response(_generar_y_obtener_respuesta(modeloSeleccionado=modeloSeleccionado, solicitudRecetaObj=solicitudRecetaObj)) 
+        response = make_response(_generar_y_obtener_respuesta(solicitudRecetaObj=solicitudRecetaObj)) 
         _verificar_token_cookies(response=response)
         return response
     except Exception as e:
@@ -55,28 +57,49 @@ def _verificar_token_cookies(response):
 
 
 
-
-
-def _generar_y_obtener_respuesta(modeloSeleccionado: str, solicitudRecetaObj: SolicitudReceta):
-    respuesta_ia = ""
-    # if modeloSeleccionado != "llama3:8b":
-    respuesta_ia = ""
-    if filtrar_palabras_clave(solicitudRecetaObj.comida):
-        respuesta_ia = generar_respuesta_ia(solicitudRecetaObj)
-    else:
-        respuesta_ia = "Por favor, solicita una receta de comida para que pueda ayudarte."
-
-    # else:
-    #     respuesta_ia = generar_respuesta_ia_local(solicitudRecetaObj)
-
-    # TODO: Lógica para obtener video:
-    if isinstance(respuesta_ia, Receta):
-        video = obtener_video_youtube(respuesta_ia.nombrePlato)
-    else:
-        video = None
-
+def _generar_y_obtener_respuesta(solicitudRecetaObj: SolicitudReceta):
+    respuesta_ia = _generar_respuesta_ia(solicitudRecetaObj)
+    video = _obtener_video(respuesta_ia=respuesta_ia)
     return _json_respuesta(respuesta_ia=respuesta_ia, video=video)
 
+
+def _generar_respuesta_ia(solicitudRecetaObj: SolicitudReceta) -> str:
+   if filtrar_palabras_clave(solicitudRecetaObj.prompt):
+        if solicitudRecetaObj.prompt.lower().startswith("https://www.youtube.com/watch?v="):
+            # TODO: Implementar generación de respuesta basada en video de YouTube
+            # TODO: requerirá que haya un agente que estudie si el video es una receta
+            # TODO: otro agente generará una receta basada en la transcripción del video.
+            return _obtener_transcripcion(solicitudRecetaObj.prompt)
+        else:
+        #return generar_respuesta_ia_local(solicitudRecetaObj)
+            return generar_respuesta_ia(solicitudRecetaObj)
+   else:
+        return "El mensaje debe empezar con 'prepara' o 'receta' para obtener una receta; o una URL de vídeo de YouTube válida si quieres una receta organizada del mismo."
+
+def _obtener_transcripcion(prompt: str)-> str | None:
+    # TODO: Este método se borrará cuando se implemente el agente de video completo.
+    # Actualmente solo extrae la transcripción de un video de YouTube si la URL es válida.
+    video_id = extraer_video_id(prompt)
+    if not video_id:
+        return "El vídeo envíado no existe o la URL no es válida."
+
+    video: VideoInfo | None = obtener_video_youtube_mediante_videoID(video_id)
+    
+    if not video:
+        return "El vídeo envíado no es válido. Ten en cuenta que solamente se aceptan videos de YouTube cuya duración sea como máximo de 30 minutos."
+    
+    
+    transcripcion: str = obtener_transcripcion(video_id)
+    if transcripcion:
+        return transcripcion
+    else:
+        return f"El vídeo envíado es: {video_id}. No tiene transcripción disponible."
+
+
+def _obtener_video(respuesta_ia: Receta | str) -> VideoInfo | None:
+    if isinstance(respuesta_ia, Receta):
+        return obtener_video_youtube(respuesta_ia.nombrePlato)
+    return None
 
 
 def _json_respuesta(respuesta_ia: Receta | str, video: VideoInfo = None):

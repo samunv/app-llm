@@ -36,7 +36,7 @@ def generar_respuesta_ia_local(datos_solicitud: SolicitudReceta):
         print(f"[{msg.__class__.__name__}]: {msg.content[:50]}...")
     print("----------------------------------------------------------\n")
     
-    respuesta_ia: str = _obtener_respuesta_ia(instrucciones=instrucciones, chat_history=chat_history, prompt=datos_solicitud.comida)
+    respuesta_ia: str = _obtener_respuesta_ia(instrucciones=instrucciones, chat_history=chat_history, prompt=datos_solicitud.prompt)
 
     print("LOG>>> RESPUESTA LLM: ", repr(respuesta_ia))
     return extraer_formato_respuesta(respuesta=respuesta_ia)

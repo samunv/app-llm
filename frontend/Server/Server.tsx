@@ -14,9 +14,8 @@ export interface RespuestaBackend {
 export const enviarReceta = async (
   solicitudReceta: SolicitudReceta
 ): Promise<RespuestaBackend> => {
-  if (!solicitudReceta?.comida && !solicitudReceta.imagen) {
-    // Permitimos enviar si hay imagen o texto (antes solo texto)
-    // Si quieres ser estricto con el texto, descomenta la validación anterior
+  if (!solicitudReceta?.prompt && !solicitudReceta.imagen) {
+    throw new Error("La solicitud de receta está vacía.");
   }
 
   console.log("Enviando >>> ", solicitudReceta);

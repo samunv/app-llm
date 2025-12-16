@@ -61,10 +61,10 @@ def _obtener_messages_con_historial(datos_solicitud: SolicitudReceta):
     
     # TODO:Por ahora, solo añadimos el texto porque los modelos de groq no aceptan imágenes, en futuro, podríamos manejarlo de otra forma.
     if datos_solicitud.imagen and datos_solicitud.tipoImagen:
-        user_content.append(datos_solicitud.comida)
+        user_content.append(datos_solicitud.prompt)
     else:
-        user_content.append(datos_solicitud.comida)
-    
+        user_content.append(datos_solicitud.prompt)
+
     # Unimos el contenido en una sola cadena para el mensaje del usuario
     messages.append({
         "role": "user",
