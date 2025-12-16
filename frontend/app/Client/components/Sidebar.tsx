@@ -69,7 +69,7 @@ export default function Sidebar({
         </div>
 
         {/* Lista de Recientes */}
-        <div className="flex-1 overflow-y-auto px-3 custom-scrollbar">
+        <div className="flex-1 overflow-y-auto px-3 custom-scrollbar border-b border-gray-300">
           <h3 className="px-4 text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">
             Recientes
           </h3>
@@ -112,11 +112,11 @@ export default function Sidebar({
 
         <div className="mt-4 mb-4 mx-6 flex flex-row ">
           {!localStorage.getItem("usuario") ? (
-          <div className="p-2 bg-gray-100 flex flex-row items-center gap-3 flex-1 rounded-xl border border-gray-300 cursor-pointer">
+          <div className=" flex flex-row items-center gap-3 flex-1 cursor-pointer">
             <img src="https://i.pinimg.com/736x/6c/eb/75/6ceb75052855a7c75e8134396f801f64.jpg" alt="Logo" width={50} height={50} className="rounded-[100%] object-cover border border-gray-400"/>
             <div className=" flex flex-col items-start text-[14px]">
-              <strong>Nombre usuario</strong>
-              <p>usuario@email.com</p>
+              <p>Nombre usuario</p>
+              <p className="text-gray-500">usuario@email.com</p>
             </div>
           </div>) :
           

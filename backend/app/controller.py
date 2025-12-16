@@ -42,6 +42,22 @@ def procesar_solicitud():
         return response
 
 
+@app.route('/api/ia-video-yt', methods=['POST'])
+@rate_limiter.limit("15 per minute")
+def procesar_solicitud_video_yt():
+    try:
+        datos = request.get_json()
+        prompt_url = datos.get("prompt_url", "")
+        response = make_response(_generar_respuesta_yt_video_url(prompt=prompt_url)) 
+        _verificar_token_cookies(response=response)
+        return response
+    except Exception as e:
+        print(f"Error en controller: {str(e)}")
+        response = make_response(jsonify({"error": str(e), "estado": "error"}))
+        _verificar_token_cookies(response=response)
+        return response
+
+
 
 def _verificar_token_cookies(response):
     token = request.cookies.get("client_token")
@@ -60,21 +76,22 @@ def _verificar_token_cookies(response):
 def _generar_y_obtener_respuesta(solicitudRecetaObj: SolicitudReceta):
     respuesta_ia = _generar_respuesta_ia(solicitudRecetaObj)
     video = _obtener_video(respuesta_ia=respuesta_ia)
-    return _json_respuesta(respuesta_ia=respuesta_ia, video=video)
+    return _json_respuesta(respuesta=respuesta_ia, video=video)
 
 
 def _generar_respuesta_ia(solicitudRecetaObj: SolicitudReceta) -> str:
+    return generar_respuesta_ia(solicitudRecetaObj)
 
-    if solicitudRecetaObj.prompt.lower().startswith("https://www.youtube.com/watch?v="):
+def _generar_respuesta_yt_video_url(prompt: str)-> str|None:
+    if prompt.lower().startswith("https://www.youtube.com/watch?v="):
             # TODO: Implementar generación de respuesta basada en video de YouTube
             # TODO: requerirá que haya un agente que estudie si el video es una receta
             # TODO: otro agente generará una receta basada en la transcripción del video.
-            return _obtener_transcripcion(solicitudRecetaObj.prompt)
+            return _json_respuesta(respuesta=_obtener_transcripcion(prompt), video=None)
     else:
-        #return generar_respuesta_ia_local(solicitudRecetaObj)
-            return generar_respuesta_ia(solicitudRecetaObj)
- 
-def _obtener_transcripcion(prompt: str)-> str | None:
+        return _json_respuesta(respuesta="La URL no es válida o no empieza por 'https://www.youtube.com/watch?v='.", video=None)
+
+def _obtener_transcripcion(prompt: str)-> str:
     # TODO: Este método se borrará cuando se implemente el agente de video completo.
     # Actualmente solo extrae la transcripción de un video de YouTube si la URL es válida.
     video_id = extraer_video_id(prompt)
@@ -84,14 +101,13 @@ def _obtener_transcripcion(prompt: str)-> str | None:
     video: VideoInfo | None = obtener_video_youtube_mediante_videoID(video_id)
 
     if not video:
-        return "El vídeo envíado no es válido. Ten en cuenta que solamente se aceptan videos de YouTube cuya duración sea como máximo de 30 minutos."
-    
-    
+        return "El vídeo envíado no es válido. Ten en cuenta que solamente se aceptan videos de YouTube cuya duración sea como máximo de 30 minutos y en español."
+
     transcripcion: str = obtener_transcripcion(video_id)
     if transcripcion:
         return transcripcion
     else:
-        return f"El vídeo envíado es: {video_id}. No tiene transcripción disponible."
+        return f"El vídeo envíado es: {video_id}. No tiene transcripción disponible o no es en Español."
 
 
 def _obtener_video(respuesta_ia: Receta | str) -> VideoInfo | None:
@@ -100,20 +116,20 @@ def _obtener_video(respuesta_ia: Receta | str) -> VideoInfo | None:
     return None
 
 
-def _json_respuesta(respuesta_ia: Receta | str, video: VideoInfo = None):
+def _json_respuesta(respuesta: Receta | str, video: VideoInfo = None):
 
-    if isinstance(respuesta_ia, Receta):
-        respuesta_ia_dict = respuesta_ia.model_dump() 
+    if isinstance(respuesta, Receta):
+        respuesta_dict = respuesta.model_dump() 
         tipo_respuesta = "receta"
-    elif isinstance(respuesta_ia, dict) and "error" in respuesta_ia:
+    elif isinstance(respuesta, dict) and "error" in respuesta:
         # Caso de error {"error": "..."}
-        respuesta_ia = respuesta_ia["error"]
+        respuesta = respuesta["error"]
         tipo_respuesta = "error"
     else:
         tipo_respuesta = "chat"
         
     return jsonify({
-            "respuesta": respuesta_ia_dict if isinstance(respuesta_ia, Receta) else respuesta_ia,
+            "respuesta": respuesta_dict if isinstance(respuesta, Receta) else respuesta,
             "tipo": tipo_respuesta,
             "estado": "exito",
             "video": video.to_dict() if video else None

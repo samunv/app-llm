@@ -5,7 +5,7 @@ export interface MensajeChat {
   id: string,
   rol: "usuario" | "ia",
   tipo: "texto" | "receta" | "error",
-  contenido: string | Receta,
+  contenido: string | Receta | undefined,
   video?: VideoInfo | null,
   imagen?:string
 }

@@ -47,8 +47,9 @@ export default function Inicio() {
 
   // const palabrasClave = ["receta", "prepara", "https://www.youtube.com/watch?v=","@"];
 
-  const [mensajePlaceholder, setMensajePlaceholder] = useState<string>("¿Qué vamos a preparar hoy?");
-
+  const [mensajePlaceholder, setMensajePlaceholder] = useState<string>(
+    "¿Qué vamos a preparar hoy?"
+  );
 
   // Estados UI1
   const [isOpen, setIsOpen] = useState(false);
@@ -87,17 +88,29 @@ export default function Inicio() {
     }
   }, [chatLog, cargando]);
 
-  // function handleVerificarInput(valorInput: string) {
-  //   const texto = valorInput.toLowerCase();
+  useEffect(() => {
+    if (modeloSeleccionado.id === "yt-receta") {
+      setMensajePlaceholder(
+        "Ej: https://www.youtube.com/watch?v=..."
+      );
+    } else {
+      setMensajePlaceholder("¿Qué vamos a preparar hoy?");
+    }
+  }, [setMensajePlaceholder, modeloSeleccionado]);
 
-  //   const esValido = palabrasClave.some((palabra) => texto.startsWith(palabra));
+  function handleVerificarInputEnlaceYouTube(valorInput: string) {
+    const texto = valorInput.toLowerCase();
 
-  //   if (!esValido) {
-  //     setMensajeError("El mensaje debe iniciar con 'receta' o 'prepara' si quieres una receta; con '@' para preguntar sobre la receta; o ser un enlace válido de vídeo de Receta de YouTube.");
-  //   } else {
-  //     setMensajeError("");
-  //   }
-  // }
+    const esValido = texto.startsWith("https://www.youtube.com/watch?v=");
+
+    if (!esValido && modeloSeleccionado.id==="yt-receta") {
+      setMensajeError(
+        "Debe ser un enlace válido de vídeo de Receta de YouTube, empezando por 'https://www.youtube.com/watch?v='."
+      );
+    } else {
+      setMensajeError("");
+    }
+  }
 
   // --- LÓGICA DE ENVÍO ---
   const handleEnviar = async () => {
@@ -350,12 +363,7 @@ export default function Inicio() {
           </h1>
         )}
 
-        {chatLog.length === 0 && !cargando && (
-          <Caracteristicas />
-        )}
-
-
-
+        {chatLog.length === 0 && !cargando && <Caracteristicas />}
 
         {/* --- AREA CHAT --- */}
         <div className="w-full max-w-[750px] px-4 flex flex-col gap-8">
@@ -644,12 +652,12 @@ export default function Inicio() {
                 : mensajePlaceholder
             }
             className="flex-1 outline-none text-base bg-transparent px-2 text-gray-700 placeholder-gray-400"
-            value={
-              solicitudReceta?.prompt ?? ""
-            }
+            value={solicitudReceta?.prompt ?? ""}
             onChange={(e) => {
               updateSolicitudRecetaCallback("prompt", e.target.value);
-              //handleVerificarInput(e.target.value);
+              // if (modeloSeleccionado.id === "yt-receta") {
+              //   handleVerificarInputEnlaceYouTube(e.target.value);
+              // }
             }}
             onKeyDown={(e) => e.key === "Enter" && handleEnviar()}
           />
@@ -658,7 +666,7 @@ export default function Inicio() {
             <div
               className="relative bg-yellow-100 text-yellow-600 text-[14px] px-4 py-2 rounded-xl flex items-center gap-2"
               onMouseEnter={() => setMostrarError(true)}
-              onMouseLeave={()=>setMostrarError(false)}
+              onMouseLeave={() => setMostrarError(false)}
             >
               <FaExclamationTriangle className="text-yellow-600" />
               <span>Advertencia</span>
@@ -669,16 +677,20 @@ export default function Inicio() {
               )}
             </div>
           )}
-
-          <div>
+          {modeloSeleccionado.id !== "yt-receta" && (
+            <div>
             <IoMdAddCircle
               size={28}
               className="text-gray-400 hover:text-orange-500 cursor-pointer"
               onClick={() => setMostrarFormEspecificaciones(true)}
             />
           </div>
+          )
+          }
 
-          {modeloSeleccionado.id == modelosLLM[0].id && (
+          
+
+          {modeloSeleccionado.id == "imagenes" && (
             <div>
               {imagenPreview ? (
                 <div className="relative group w-10 h-10">

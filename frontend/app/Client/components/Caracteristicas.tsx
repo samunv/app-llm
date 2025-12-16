@@ -15,7 +15,7 @@ export default function Caracteristicas() {
       />
       <BloqueCaracteristica
         titulo="Multimedia"
-        descripcion="Envía imágenes; o vídeos de YouTube de Recetas para obtener recetas estructuradas."
+        descripcion="Obtén recetas a partir de imágenes, o vídeos de YouTube de Recetas."
         icono={<MdPermMedia className="text-orange-500" size={30}/>}
       />
       <BloqueCaracteristica
