@@ -64,18 +64,16 @@ def _generar_y_obtener_respuesta(solicitudRecetaObj: SolicitudReceta):
 
 
 def _generar_respuesta_ia(solicitudRecetaObj: SolicitudReceta) -> str:
-   if filtrar_palabras_clave(solicitudRecetaObj.prompt):
-        if solicitudRecetaObj.prompt.lower().startswith("https://www.youtube.com/watch?v="):
+
+    if solicitudRecetaObj.prompt.lower().startswith("https://www.youtube.com/watch?v="):
             # TODO: Implementar generación de respuesta basada en video de YouTube
             # TODO: requerirá que haya un agente que estudie si el video es una receta
             # TODO: otro agente generará una receta basada en la transcripción del video.
             return _obtener_transcripcion(solicitudRecetaObj.prompt)
-        else:
+    else:
         #return generar_respuesta_ia_local(solicitudRecetaObj)
             return generar_respuesta_ia(solicitudRecetaObj)
-   else:
-        return "El mensaje debe empezar con 'prepara' o 'receta' para obtener una receta; o una URL de vídeo de YouTube válida si quieres una receta organizada del mismo."
-
+ 
 def _obtener_transcripcion(prompt: str)-> str | None:
     # TODO: Este método se borrará cuando se implemente el agente de video completo.
     # Actualmente solo extrae la transcripción de un video de YouTube si la URL es válida.
@@ -84,7 +82,7 @@ def _obtener_transcripcion(prompt: str)-> str | None:
         return "El vídeo envíado no existe o la URL no es válida."
 
     video: VideoInfo | None = obtener_video_youtube_mediante_videoID(video_id)
-    
+
     if not video:
         return "El vídeo envíado no es válido. Ten en cuenta que solamente se aceptan videos de YouTube cuya duración sea como máximo de 30 minutos."
     

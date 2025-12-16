@@ -42,13 +42,13 @@ FORMATO DE RESPUESTA
 OUTPUT ESPERADO PARA LAS RECETAS: {JSON_RECETA_OUTPUT}
 
 CONTEXTO DE LA SOLICITUD
-PROMPT O INPUT DEL USUARIO: << {prompt + ". Dieta: " + tipo_dieta + "; Restricciones: " + restricciones + "; Objetivos: " + objetivo + "; Añade ingredientes personalizados como: (si los hay) " + ingredientes_disponibles} >> Si el usuario pide algo que no sea sobre comida, responde EXACTAMENTE:
+PROMPT O INPUT DEL USUARIO: << {prompt + ". Dieta: " + tipo_dieta + "; Restricciones: " + restricciones + "; Objetivos: " + objetivo + "; Añade ingredientes personalizados como: (si los hay) " + ingredientes_disponibles} >> Si el usuario pide algo que no sea sobre comida o preguntas sobre las recetas anteriores, responde EXACTAMENTE:
 "Solo puedo ayudarte con recetas de cocina." No generes recetas sobre personas, deportes, política o cualquier otro tema.
 """
 
 
 def filtrar_palabras_clave(texto: str) -> bool:
-    palabras_clave = ["receta", "prepara", "https://www.youtube.com/watch?v="]
+    palabras_clave = ["receta", "prepara", "https://www.youtube.com/watch?v=" , "@"]
     texto_lower = texto.lower()
     return any(texto_lower.startswith(palabra) for palabra in palabras_clave)
 

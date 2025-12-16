@@ -45,9 +45,12 @@ export default function Inicio() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const { historial, guardarConversacion, borrarConversacion } = useHistorial();
 
-  const palabrasClave = ["receta", "prepara", "https://www.youtube.com/watch?v="];
+  // const palabrasClave = ["receta", "prepara", "https://www.youtube.com/watch?v=","@"];
 
-  // Estados UI
+  const [mensajePlaceholder, setMensajePlaceholder] = useState<string>("¿Qué vamos a preparar hoy?");
+
+
+  // Estados UI1
   const [isOpen, setIsOpen] = useState(false);
   const [modeloSeleccionado, setModeloSeleccionado] = useState<Modelo>(
     modelosLLM[0]
@@ -84,17 +87,17 @@ export default function Inicio() {
     }
   }, [chatLog, cargando]);
 
-  function handleVerificarInput(valorInput: string) {
-    const texto = valorInput.toLowerCase();
+  // function handleVerificarInput(valorInput: string) {
+  //   const texto = valorInput.toLowerCase();
 
-    const esValido = palabrasClave.some((palabra) => texto.startsWith(palabra));
+  //   const esValido = palabrasClave.some((palabra) => texto.startsWith(palabra));
 
-    if (!esValido) {
-      setMensajeError("El mensaje debe iniciar con 'receta' o 'prepara'; o ser un enlace válido de vídeo de Receta de YouTube.");
-    } else {
-      setMensajeError("");
-    }
-  }
+  //   if (!esValido) {
+  //     setMensajeError("El mensaje debe iniciar con 'receta' o 'prepara' si quieres una receta; con '@' para preguntar sobre la receta; o ser un enlace válido de vídeo de Receta de YouTube.");
+  //   } else {
+  //     setMensajeError("");
+  //   }
+  // }
 
   // --- LÓGICA DE ENVÍO ---
   const handleEnviar = async () => {
@@ -636,9 +639,9 @@ export default function Inicio() {
             type="text"
             required={true}
             placeholder={
-              chatLog.length > 0
+              chatLog.some((msg) => msg.tipo === "receta") && chatLog.length > 1
                 ? "¿Peparamos otra receta?"
-                : "¿Qué vamos a preparar hoy?"
+                : mensajePlaceholder
             }
             className="flex-1 outline-none text-base bg-transparent px-2 text-gray-700 placeholder-gray-400"
             value={
@@ -646,7 +649,7 @@ export default function Inicio() {
             }
             onChange={(e) => {
               updateSolicitudRecetaCallback("prompt", e.target.value);
-              handleVerificarInput(e.target.value);
+              //handleVerificarInput(e.target.value);
             }}
             onKeyDown={(e) => e.key === "Enter" && handleEnviar()}
           />
