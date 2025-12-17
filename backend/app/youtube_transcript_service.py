@@ -22,4 +22,33 @@ def obtener_transcripcion(video_id: str) -> str:
     # eliminar múltiples espacios por uno solo (opcional, pero recomendado para limpieza)
     texto_final = re.sub(r'\s+', ' ', texto_limpio_parcial).strip()
 
-    return texto_final
+    return _limpiar_stopwords(texto_final)
+
+def _limpiar_stopwords(texto: str) -> str:
+    cta = [
+        "suscríbete", "suscribiros", "dale a like", "enlace en la descripción", 
+        "caja de información", "canal", "comenta abajo", "comparte este video",
+        "redes sociales", "instagram", "facebook", "tiktok", "clica", "campanita", "gustado", "vídeo", "enseñar", "música"
+    ]
+
+    cortesia = [
+        "hola", "bienvenidos", "buenos días", "buenas tardes", "buenas noches",
+        "saludos", "adiós", "hasta la próxima", "espero que estéis bien",
+        "un beso", "un fuerte abrazo", "gracias por estar aquí", "bien", "ustedes", "usted"
+    ]
+
+    relleno = [
+        "bueno pues", "entonces", "entonces lo que vamos a hacer", 
+        "como os decía", "fijaros", "mira", "mirad", "por aquí", 
+        "en este caso", "digamos que", "la verdad es que", "básicamente",
+        "a continuación"
+    ]
+
+    texto_bajo = texto.lower()
+
+    # Aplicar limpieza de frases completas primero (las más largas)
+    todas = cta + cortesia + relleno
+    for palabra in todas:
+        texto_bajo = texto_bajo.replace(palabra, "")
+
+    return texto_bajo

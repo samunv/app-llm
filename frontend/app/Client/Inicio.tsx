@@ -548,7 +548,7 @@ export default function Inicio() {
 
           {cargando && (
             <div className="flex justify-start w-full">
-              <div className="loader"></div>
+              <img src="/img/a218f772a59aad480fcded754fa01824-ezgif.com-crop (1).gif" alt="" width={70} height={70} className="object-cover rounded-full"/>
             </div>
           )}
         </div>

@@ -19,9 +19,8 @@ JSON_RECETA_OUTPUT = """
 """
 
 
-def obtener_instrucciones_generador_recetas(datos_solicitud: SolicitudReceta={}, fuente_info: str = ""):
-    prompt = datos_solicitud.prompt or ""
-    especificaciones = datos_solicitud.especificaciones or Especificaciones()
+def obtener_instrucciones_generador_recetas(prompt="", especificaciones:Especificaciones = {}, fuente_info: str = ""):
+    prompt = prompt or ""
 
     return f"""
 ROL Y OBJETIVO
@@ -45,7 +44,7 @@ def _prompt_para_receta_con_fuente(fuente_info: str, especificaciones: Especific
     return f"""
 UTILIZA ESTE TEXTO COMO FUENTE DE INFORMACIÓN PARA REALIZAR LA RECETA: <<{fuente_info}>>
 ESPECIFICACIONES DEL USUARIO (Considerálos solamente si son válidas) : << {"Dieta: " + especificaciones.tipo_dieta or "Ninguna" + "; Restricciones: " + especificaciones.restricciones or "Ninguna" + "; Objetivos: " + especificaciones.objetivo or "Ninguno" + "; Añade ingredientes personalizados como: (si los hay) " + especificaciones.ingredientes_disponibles or "Ninguno" } >>
-LA RECETA DEBE ESTAR BASADA EN ESE TEXTO COMBINANDO LAS ESPECIFICACIONES DEL USUARIO
+LA RECETA DEBE ESTAR BASADA EN ESE TEXTO COMBINANDO LAS ESPECIFICACIONES DEL USUARIO.
  """
 
 

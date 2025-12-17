@@ -52,7 +52,7 @@ def procesar_solicitud_video_yt():
             especificaciones=especificacionesObj or Especificaciones(),
             historial=datos.get('historial', []),
         )
-        response = make_response(_generar_respuesta_yt_video_url(prompt=solicitudRecetaObj.prompt)) 
+        response = make_response(_generar_respuesta_yt_video_url(prompt=solicitudRecetaObj.prompt, especificaciones=solicitudRecetaObj.especificaciones)) 
         _verificar_token_cookies(response=response)
         return response
     except Exception as e:
@@ -85,8 +85,8 @@ def _generar_y_obtener_respuesta(solicitudRecetaObj: SolicitudReceta):
 def _generar_respuesta_ia(solicitudRecetaObj: SolicitudReceta) -> str:
     return generar_respuesta_ia(datos_solicitud=solicitudRecetaObj)
 
-def _generar_respuesta_yt_video_url(prompt: str)-> str|None:
-    return _json_respuesta(respuesta=generar_respuesta_yt_video_url(prompt=prompt), video=None)
+def _generar_respuesta_yt_video_url(prompt: str, especificaciones: Especificaciones = {})-> str|None:
+    return _json_respuesta(respuesta=generar_respuesta_yt_video_url(prompt=prompt, especificaciones=especificaciones), video=None)
 
 
 def _obtener_video(respuesta_ia: Receta | str) -> VideoInfo | None:
