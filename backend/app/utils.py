@@ -19,13 +19,9 @@ JSON_RECETA_OUTPUT = """
 """
 
 
-def obtener_instrucciones(datos_solicitud: SolicitudReceta):
+def obtener_instrucciones_generador_recetas(datos_solicitud: SolicitudReceta={}, fuente_info: str = ""):
     prompt = datos_solicitud.prompt or ""
     especificaciones = datos_solicitud.especificaciones or Especificaciones()
-    tipo_dieta = especificaciones.tipo_dieta or "Ninguna"
-    restricciones = especificaciones.restricciones or "Ninguna"
-    objetivo = especificaciones.objetivo or "Ninguno"
-    ingredientes_disponibles = especificaciones.ingredientes_disponibles or "Ninguno"
 
     return f"""
 ROL Y OBJETIVO
@@ -42,9 +38,26 @@ FORMATO DE RESPUESTA
 OUTPUT ESPERADO PARA LAS RECETAS: {JSON_RECETA_OUTPUT}
 
 CONTEXTO DE LA SOLICITUD
-PROMPT O INPUT DEL USUARIO: << {prompt + ". Dieta: " + tipo_dieta + "; Restricciones: " + restricciones + "; Objetivos: " + objetivo + "; Añade ingredientes personalizados como: (si los hay) " + ingredientes_disponibles} >> Si el usuario pide algo que no sea sobre comida o preguntas sobre las recetas anteriores, responde EXACTAMENTE:
-"Solo puedo ayudarte con recetas de cocina." No generes recetas sobre personas, deportes, política o cualquier otro tema.
+{_prompt_para_receta_con_fuente(fuente_info=fuente_info, especificaciones=especificaciones) if fuente_info else _prompt_para_receta_pedida(prompt_usuario=prompt, especificaciones=especificaciones)}
 """
+
+def _prompt_para_receta_con_fuente(fuente_info: str, especificaciones: Especificaciones)->str:
+    return f"""
+UTILIZA ESTE TEXTO COMO FUENTE DE INFORMACIÓN PARA REALIZAR LA RECETA: <<{fuente_info}>>
+ESPECIFICACIONES DEL USUARIO (Considerálos solamente si son válidas) : << {"Dieta: " + especificaciones.tipo_dieta or "Ninguna" + "; Restricciones: " + especificaciones.restricciones or "Ninguna" + "; Objetivos: " + especificaciones.objetivo or "Ninguno" + "; Añade ingredientes personalizados como: (si los hay) " + especificaciones.ingredientes_disponibles or "Ninguno" } >>
+LA RECETA DEBE ESTAR BASADA EN ESE TEXTO COMBINANDO LAS ESPECIFICACIONES DEL USUARIO
+ """
+
+
+
+def _prompt_para_receta_pedida(prompt_usuario:str, especificaciones: Especificaciones)->str:
+
+    return f"""
+PROMPT O INPUT DEL USUARIO: << {prompt_usuario + ". Dieta: " + especificaciones.tipo_dieta or "Ninguna" + "; Restricciones: " + especificaciones.restricciones  or "Ninguna"+ "; Objetivos: " + especificaciones.objetivo or "Ninguno" + "; Añade ingredientes personalizados como: (si los hay) " + especificaciones.ingredientes_disponibles or "Ninguno"} >> Si el usuario pide algo que no sea sobre comida o preguntas sobre las recetas anteriores, responde EXACTAMENTE:
+"Solo puedo ayudarte con recetas de cocina." No generes recetas sobre personas, deportes, política o cualquier otro tema.
+
+"""
+
 
 
 def filtrar_palabras_clave(texto: str) -> bool:

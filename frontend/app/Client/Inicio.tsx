@@ -677,7 +677,7 @@ export default function Inicio() {
               )}
             </div>
           )}
-          {modeloSeleccionado.id !== "yt-receta" && (
+          
             <div>
             <IoMdAddCircle
               size={28}
@@ -685,8 +685,7 @@ export default function Inicio() {
               onClick={() => setMostrarFormEspecificaciones(true)}
             />
           </div>
-          )
-          }
+          
 
           
 

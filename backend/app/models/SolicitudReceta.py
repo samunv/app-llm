@@ -2,7 +2,7 @@ from app.models.Especificaciones import Especificaciones
 
 class SolicitudReceta:
 
-    def __init__(self, prompt, modeloIASeleccionado, imagen, tipoImagen, especificaciones: Especificaciones = None, historial=None):
+    def __init__(self, prompt, modeloIASeleccionado, imagen="", tipoImagen="", especificaciones: Especificaciones = None, historial=None):
         self.prompt = prompt
         self.modeloIASeleccionado = modeloIASeleccionado
         self.imagen = imagen

@@ -1,5 +1,4 @@
 from flask import Flask, request, jsonify, make_response
-# from app.gemini_service import generar_respuesta_ia
 from app.api_model_service import generar_respuesta_ia
 from app.models.Especificaciones import Especificaciones
 from app.models.SolicitudReceta import SolicitudReceta
@@ -9,9 +8,7 @@ from app.models.Receta import Receta
 from app.youtube_search_api_service import obtener_video_youtube
 from app.models.VideoInfo import VideoInfo
 import uuid
-from app.utils import filtrar_palabras_clave, extraer_video_id
-from app.youtube_transcript_service import obtener_transcripcion
-from app.youtube_video_service import obtener_video_youtube_mediante_videoID
+from app.procesar_receta_yt_service import generar_respuesta_yt_video_url
 
 app = Flask(__name__)
 
@@ -47,8 +44,15 @@ def procesar_solicitud():
 def procesar_solicitud_video_yt():
     try:
         datos = request.get_json()
-        prompt_url = datos.get("prompt_url", "")
-        response = make_response(_generar_respuesta_yt_video_url(prompt=prompt_url)) 
+        modelo_seleccionado = "llama-3.1-8b-instant"
+        especificacionesObj = Especificaciones(**datos.get("especificaciones", {}))
+        solicitudRecetaObj = SolicitudReceta(
+            prompt=datos.get('prompt', ''),
+            modeloIASeleccionado=modelo_seleccionado,
+            especificaciones=especificacionesObj or Especificaciones(),
+            historial=datos.get('historial', []),
+        )
+        response = make_response(_generar_respuesta_yt_video_url(prompt=solicitudRecetaObj.prompt)) 
         _verificar_token_cookies(response=response)
         return response
     except Exception as e:
@@ -78,36 +82,11 @@ def _generar_y_obtener_respuesta(solicitudRecetaObj: SolicitudReceta):
     video = _obtener_video(respuesta_ia=respuesta_ia)
     return _json_respuesta(respuesta=respuesta_ia, video=video)
 
-
 def _generar_respuesta_ia(solicitudRecetaObj: SolicitudReceta) -> str:
-    return generar_respuesta_ia(solicitudRecetaObj)
+    return generar_respuesta_ia(datos_solicitud=solicitudRecetaObj)
 
 def _generar_respuesta_yt_video_url(prompt: str)-> str|None:
-    if prompt.lower().startswith("https://www.youtube.com/watch?v="):
-            # TODO: Implementar generación de respuesta basada en video de YouTube
-            # TODO: requerirá que haya un agente que estudie si el video es una receta
-            # TODO: otro agente generará una receta basada en la transcripción del video.
-            return _json_respuesta(respuesta=_obtener_transcripcion(prompt), video=None)
-    else:
-        return _json_respuesta(respuesta="La URL no es válida o no empieza por 'https://www.youtube.com/watch?v='.", video=None)
-
-def _obtener_transcripcion(prompt: str)-> str:
-    # TODO: Este método se borrará cuando se implemente el agente de video completo.
-    # Actualmente solo extrae la transcripción de un video de YouTube si la URL es válida.
-    video_id = extraer_video_id(prompt)
-    if not video_id:
-        return "El vídeo envíado no existe o la URL no es válida."
-
-    video: VideoInfo | None = obtener_video_youtube_mediante_videoID(video_id)
-
-    if not video:
-        return "El vídeo envíado no es válido. Ten en cuenta que solamente se aceptan videos de YouTube cuya duración sea como máximo de 30 minutos y en español."
-
-    transcripcion: str = obtener_transcripcion(video_id)
-    if transcripcion:
-        return transcripcion
-    else:
-        return f"El vídeo envíado es: {video_id}. No tiene transcripción disponible o no es en Español."
+    return _json_respuesta(respuesta=generar_respuesta_yt_video_url(prompt=prompt), video=None)
 
 
 def _obtener_video(respuesta_ia: Receta | str) -> VideoInfo | None:

@@ -2,7 +2,7 @@ import ollama
 from langchain_community.chat_models import ChatOllama
 from langchain_core.messages import HumanMessage, AIMessage, BaseMessage
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
-from app.utils import obtener_instrucciones, extraer_formato_respuesta
+from app.utils import obtener_instrucciones_generador_recetas, extraer_formato_respuesta
 from app.models import SolicitudReceta
 
 # Inicialización de ChatOllama
@@ -24,7 +24,7 @@ def _obtener_prompt_template(instrucciones: str) -> ChatPromptTemplate:
 
 def generar_respuesta_ia_local(datos_solicitud: SolicitudReceta):
 
-    instrucciones = obtener_instrucciones(datos_solicitud=datos_solicitud)
+    instrucciones = obtener_instrucciones_generador_recetas(datos_solicitud=datos_solicitud)
 
     # El historial de chat con tipo List[BaseMessage]
     historial_cliente = datos_solicitud.historial.copy()

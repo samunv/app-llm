@@ -1,3 +1,4 @@
+import { Especificaciones } from "@/app/interfaces/Especificaciones";
 import { Receta } from "@/app/interfaces/Receta";
 import { SolicitudReceta } from "@/app/interfaces/SolicitudReceta";
 import { VideoInfo } from "@/app/interfaces/VideoInfo";
@@ -20,20 +21,28 @@ export const enviarReceta = async (
 
   console.log("Enviando >>> ", solicitudReceta);
 
-  if (solicitudReceta.modeloIASeleccionado === "yt-receta") {
-    return fetchGenerarRecetaDeVideoYouTube({
-      prompt_url: solicitudReceta.prompt,
-    });
-  } else if (solicitudReceta.modeloIASeleccionado === "nevera") {
-    return { error: "este modelo no está disponible en este momento." };
-  } else if (solicitudReceta.modeloIASeleccionado === "imagenes") {
-    if (!solicitudReceta.imagen || !solicitudReceta.tipoImagen) {
-      return { error: "Debes incluir una imágen en tu solicitud." };
-    } else {
-      return { error: "este modelo no está disponible en este momento." };
-    }
-  } else {
-    return fetchGenerarRecetaNormal(solicitudReceta);
+  switch (solicitudReceta.modeloIASeleccionado) {
+    case "yt-receta":
+      return fetchGenerarRecetaDeVideoYouTube(solicitudReceta);
+
+    case "nevera":
+      return {
+        error: "este modelo no está disponible en este momento.",
+      };
+
+    case "imagenes":
+      if (!solicitudReceta.imagen || !solicitudReceta.tipoImagen) {
+        return {
+          error: "Debes incluir una imágen en tu solicitud.",
+        };
+      } else {
+        return {
+          error: "este modelo no está disponible en este momento.",
+        };
+      }
+
+    default:
+      return fetchGenerarRecetaNormal(solicitudReceta);
   }
 };
 
@@ -57,16 +66,14 @@ async function fetchGenerarRecetaNormal(
   }
 }
 
-async function fetchGenerarRecetaDeVideoYouTube(prompt_url: {
-  prompt_url: string;
-}): Promise<RespuestaBackend> {
+async function fetchGenerarRecetaDeVideoYouTube(solicitudReceta: SolicitudReceta): Promise<RespuestaBackend> {
   try {
     const response = await fetch("http://127.0.0.1:5000/api/ia-video-yt", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(prompt_url),
+      body: JSON.stringify(solicitudReceta),
     });
 
     const data = await response.json();
