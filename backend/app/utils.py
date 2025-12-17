@@ -26,13 +26,6 @@ def obtener_instrucciones_generador_recetas(prompt="", especificaciones:Especifi
 ROL Y OBJETIVO
 Eres ChefGPT, un asistente experto en cocina. Tu función principal es generar recetas y responder preguntas sobre la ÚLTIMA receta que generaste.
 
-FORMATO DE RESPUESTA
-1. Si el usuario pide una receta, DEVUELVE SOLO el JSON solicitado. NO añadas texto antes ni después.
-2. Si el usuario pregunta sobre la receta en el historial, responde en texto plano de manera concisa.
-3. Si el usuario pregunta por algo que no es comida o ingredientes, o no hay receta en el historial, pide amablemente que solicite una receta.
-4. Todas tus respuestas deben ser siempre en ESPAÑOL (nunca en otro idioma que no sea Español castellano). Si el usuario trata de pedir las cosas en otro idioma, tú responderás en español.
-
-
 // ESTRUCTURA JSON (OBLIGATORIA)
 OUTPUT ESPERADO PARA LAS RECETAS: {JSON_RECETA_OUTPUT}
 
@@ -42,7 +35,7 @@ CONTEXTO DE LA SOLICITUD
 
 def _prompt_para_receta_con_fuente(fuente_info: str, especificaciones: Especificaciones)->str:
     return f"""
-UTILIZA ESTE TEXTO COMO FUENTE DE INFORMACIÓN PARA REALIZAR LA RECETA: <<{fuente_info}>>
+UTILIZA ESTE TEXTO COMO FUENTE DE INFORMACIÓN PARA REALIZAR UNA RECETA ESTRUCTURADA con el formato indicado: << {fuente_info} >>
 ESPECIFICACIONES DEL USUARIO (Considerálos solamente si son válidas) : << {"Dieta: " + especificaciones.tipo_dieta or "Ninguna" + "; Restricciones: " + especificaciones.restricciones or "Ninguna" + "; Objetivos: " + especificaciones.objetivo or "Ninguno" + "; Añade ingredientes personalizados como: (si los hay) " + especificaciones.ingredientes_disponibles or "Ninguno" } >>
 LA RECETA DEBE ESTAR BASADA EN ESE TEXTO COMBINANDO LAS ESPECIFICACIONES DEL USUARIO.
  """
@@ -52,6 +45,12 @@ LA RECETA DEBE ESTAR BASADA EN ESE TEXTO COMBINANDO LAS ESPECIFICACIONES DEL USU
 def _prompt_para_receta_pedida(prompt_usuario:str, especificaciones: Especificaciones)->str:
 
     return f"""
+FORMATO DE RESPUESTA
+1. Si el usuario pide una receta, DEVUELVE SOLO el JSON solicitado. NO añadas texto antes ni después.
+2. Si el usuario pregunta sobre la receta en el historial, responde en texto plano de manera concisa.
+3. Si el usuario pregunta por algo que no es comida o ingredientes, o no hay receta en el historial, pide amablemente que solicite una receta.
+4. Todas tus respuestas deben ser siempre en ESPAÑOL (nunca en otro idioma que no sea Español castellano). Si el usuario trata de pedir las cosas en otro idioma, tú responderás en español.
+
 PROMPT O INPUT DEL USUARIO: << {prompt_usuario + ". Dieta: " + especificaciones.tipo_dieta or "Ninguna" + "; Restricciones: " + especificaciones.restricciones  or "Ninguna"+ "; Objetivos: " + especificaciones.objetivo or "Ninguno" + "; Añade ingredientes personalizados como: (si los hay) " + especificaciones.ingredientes_disponibles or "Ninguno"} >> Si el usuario pide algo que no sea sobre comida o preguntas sobre las recetas anteriores, responde EXACTAMENTE:
 "Solo puedo ayudarte con recetas de cocina." No generes recetas sobre personas, deportes, política o cualquier otro tema.
 

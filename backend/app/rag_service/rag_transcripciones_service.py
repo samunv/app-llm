@@ -4,8 +4,6 @@ from app.models.VideoInfo import VideoInfo
 from app.config.chromadb_client import coleccion_transcripciones_de_yt
 
 def obtener_receta_semantica_de_transcripciones(video_info:VideoInfo, transcripcion:str = "")->str:
-    # verificar la existencia de documentos de X video_id (estará en la metadata).
-    # Si no existe, insertar las transcripciones en la base de datos
     if not _verificar_transcripcion_registrada(video_info.video_id):
         _insertar_transcripcion(video_info=video_info ,transcripcion=transcripcion)
 
@@ -22,8 +20,8 @@ def obtener_receta_semantica_de_transcripciones(video_info:VideoInfo, transcripc
 
     RECETA_SEMANTICA = f"""
     Nombre de la receta: {nombre_receta}
-    Información disponible de los ingredientes: << {texto_ingredientes} >>
-    Información disponible sobre los pasos principales: << {texto_pasos} >>
+    Información disponible de los ingredientes: {texto_ingredientes}
+    Información disponible sobre los pasos principales: {texto_pasos}
     """
 
     return RECETA_SEMANTICA
@@ -80,7 +78,7 @@ def _obtener_fragmentos_ingredientes(video_id: str) -> list:
 
 def _obtener_fragmentos_pasos(video_id:str)->list:
     resultados = coleccion_transcripciones_de_yt.query(
-        query_pasos = [
+        query_texts = [
     "Instrucciones de cocina paso a paso",
     "Preparación, cocinado, tiempos y temperaturas",
     "Primero hacemos esto, después añadimos aquello",
