@@ -99,10 +99,26 @@ def _obtener_fragmentos_cercanos(resultados: dict):
     for i in range(len(resultados['documents'])):
         docs = resultados['documents'][i]
         dists = resultados['distances'][i]
-        
+
         for doc, dist in zip(docs, dists):
             # El umbral de 1.1 es excelente para Llama 3
             if dist < 1.1:
                 fragmentos_cercanos.append(doc)
 
     return list(set(fragmentos_cercanos))
+
+
+def obtener_fragmentos_mediante_prompt_usuario(prompt_usuario:str)->list:
+    resultados = coleccion_transcripciones_de_yt.query(
+        query_texts = [
+            prompt_usuario
+        ],
+        n_results=3,
+        include=["documents", "distances"]
+    )
+
+    # Verificar si hay resultados
+    if not resultados or not resultados['documents'][0]:
+        return []
+
+    return _obtener_fragmentos_cercanos(resultados)
