@@ -16,7 +16,7 @@ def generar_respuesta_ia(datos_solicitud: SolicitudReceta = {}, fuente_info:str 
     # Usamos el modelo seleccionado o un valor predeterminado compatible con Groq.
     modelo_id = datos_solicitud.modeloIASeleccionado or "llama-3.1-8b-instant"
 
-    messages = _obtener_messages_con_historial(datos_solicitud=datos_solicitud)
+    messages = _obtener_messages_con_historial(datos_solicitud=datos_solicitud) if not fuente_info else []
     system_prompt = obtener_instrucciones_generador_recetas(prompt=datos_solicitud.prompt, especificaciones=datos_solicitud.especificaciones, fuente_info=fuente_info if fuente_info else "")
 
     # Llamada a la API usando el SDK

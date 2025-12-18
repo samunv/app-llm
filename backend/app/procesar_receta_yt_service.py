@@ -1,5 +1,5 @@
 
-from app.utils import extraer_video_id
+from app.utils import extraer_video_id, obtener_instrucciones_generador_recetas
 from app.youtube_transcript_service import obtener_transcripcion
 from app.youtube_video_service import obtener_video_youtube_mediante_videoID
 from app.models.VideoInfo import VideoInfo
@@ -8,13 +8,15 @@ from app.models.Especificaciones import Especificaciones
 from app.youtube_search_api_service import obtener_video_youtube
 from app.clasificador_service import clasificar_video
 from app.rag_service.rag_transcripciones_service import obtener_receta_semantica_de_transcripciones
+from app.api_model_service import generar_respuesta_ia
+from app.models.SolicitudReceta import SolicitudReceta
 
-def generar_respuesta_yt_video_url(prompt: str, especificaciones: Especificaciones = {})-> str:
-    if prompt.lower().startswith("https://www.youtube.com/watch?v="):
+def generar_respuesta_yt_video_url(datos_solicitud: SolicitudReceta)-> str:
+   
         # TODO: Implementar generación de respuesta basada en video de YouTube
         # TODO: requerirá que haya un agente que estudie si el video es una receta
         # TODO: otro agente generará una receta basada en la transcripción del video.
-        video_estatus = _verificar_video_existente(prompt=prompt)
+        video_estatus = _verificar_video_existente(prompt=datos_solicitud.prompt)
 
         if not video_estatus:
                 return "No existe el vídeo con la URL envíada."
@@ -31,15 +33,10 @@ def generar_respuesta_yt_video_url(prompt: str, especificaciones: Especificacion
         if not clasificar_video(titulo_video=video.titulo, transcripcion=transcripcion):
             return "El vídeo no se trata de una receta válida. Por favor, pega el enlace de un vídeo válido para obtener la receta."
 
-        # Obtener receta a partir de la transcripcion
-        # receta: Receta = generar_receta_de_yt()
-        # verificar que receta sea del tipo receta para enviar
         receta_semantica = obtener_receta_semantica_de_transcripciones(video_info=video, transcripcion=transcripcion)
 
-        # Por ahora solo devolvemos los docs obtenidos
-        return receta_semantica
-    else:
-        return "La URL no es válida o no empieza por 'https://www.youtube.com/watch?v='."
+        respuesta_ia= generar_respuesta_ia(datos_solicitud=datos_solicitud, fuente_info=receta_semantica)
+        return respuesta_ia
 
 def _verificar_video_existente(prompt:str)->VideoInfo|None:
     video_id = extraer_video_id(prompt)

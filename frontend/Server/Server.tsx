@@ -19,6 +19,12 @@ export const enviarReceta = async (
     throw new Error("La solicitud de receta está vacía.");
   }
 
+  if(!verificarCantidadMensajesHistorial(solicitudReceta.historial!)){
+    return {
+      error: "Has alcanzado el límite de conversación. Por favor, inicia una nueva haciendo click en 'Nueva receta'."
+    }
+  }
+
   console.log("Enviando >>> ", solicitudReceta);
 
   switch (solicitudReceta.modeloIASeleccionado) {
@@ -45,6 +51,13 @@ export const enviarReceta = async (
       return fetchGenerarRecetaNormal(solicitudReceta);
   }
 };
+
+function verificarCantidadMensajesHistorial(historial:Array<{ role: string; parts: { text: string }[] }>):boolean {
+  if (historial.length >= 8){
+    return false
+  }
+  return true
+}
 
 async function fetchGenerarRecetaNormal(
   solicitudReceta: SolicitudReceta

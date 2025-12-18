@@ -385,7 +385,7 @@ export default function Inicio() {
                       }`}
                     >
                       {msg.rol === "ia" && (
-                        <div className="flex items-center gap-1 mb-2 font-bold text-[#E67E22]">
+                        <div className="flex items-center gap-1 mb-2 font-bold text-[#FF6900]">
                           <svg
                             viewBox="0 0 24 24"
                             fill="none"

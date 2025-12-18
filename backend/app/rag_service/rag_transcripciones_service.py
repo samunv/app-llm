@@ -12,16 +12,14 @@ def obtener_receta_semantica_de_transcripciones(video_info:VideoInfo, transcripc
     fragmentos_ingredientes = _obtener_fragmentos_ingredientes(video_id=video_info.video_id)
     fragmentos_pasos = _obtener_fragmentos_pasos(video_id=video_info.video_id)
 
-    fragmentos_ingredientes_unicos = list(set(fragmentos_ingredientes))
-    fragmentos_pasos_unicos =list(set(fragmentos_pasos))
+    total_docs = list(set(fragmentos_ingredientes + fragmentos_pasos))
 
-    texto_ingredientes = "; ".join(fragmentos_ingredientes_unicos)
-    texto_pasos = "; ".join(fragmentos_pasos_unicos)
+    contexto_unificado = "\n- ".join(total_docs)
 
     RECETA_SEMANTICA = f"""
     Nombre de la receta: {nombre_receta}
-    Información disponible de los ingredientes: {texto_ingredientes}
-    Información disponible sobre los pasos principales: {texto_pasos}
+    CONTEXTO RECUPERADO:
+    - {contexto_unificado}
     """
 
     return RECETA_SEMANTICA
@@ -96,9 +94,15 @@ def _obtener_fragmentos_pasos(video_id:str)->list:
     return _obtener_fragmentos_cercanos(resultados)
 
 def _obtener_fragmentos_cercanos(resultados: dict):
-    # Filtrar: Solo nos quedamos con los docs cuya distancia sea menor a 1.0
     fragmentos_cercanos = []
-    for doc, dist in zip(resultados['documents'][0], resultados['distances'][0]):
-        if dist < 1.0:
-            fragmentos_cercanos.append(doc)
-    return fragmentos_cercanos
+    # Iteramos por cada query (Chroma devuelve una lista por cada frase en query_texts)
+    for i in range(len(resultados['documents'])):
+        docs = resultados['documents'][i]
+        dists = resultados['distances'][i]
+        
+        for doc, dist in zip(docs, dists):
+            # El umbral de 1.1 es excelente para Llama 3
+            if dist < 1.1:
+                fragmentos_cercanos.append(doc)
+
+    return list(set(fragmentos_cercanos))
