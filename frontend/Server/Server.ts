@@ -1,3 +1,4 @@
+'use server';
 import { Especificaciones } from "@/app/interfaces/Especificaciones";
 import { Receta } from "@/app/interfaces/Receta";
 import { SolicitudReceta } from "@/app/interfaces/SolicitudReceta";
@@ -19,11 +20,19 @@ export const enviarReceta = async (
     throw new Error("La solicitud de receta está vacía.");
   }
 
+  if(!verificarLongitudPrompt(solicitudReceta.prompt)){
+    return {error:"Tu prompt no debe exceder los 200 caracteres."}
+  }
+
   if(!verificarCantidadMensajesHistorial(solicitudReceta.historial!)){
     return {
       error: "Has alcanzado el límite de conversación. Por favor, inicia una nueva haciendo click en 'Nueva receta'."
     }
   }
+
+  if (solicitudReceta.imagen && solicitudReceta.imagen.length > 5 * 1024 * 1024) { // Límite de 5MB aprox
+    return { error: "La imagen es demasiado pesada. No debe superar los 5MB." };
+}
 
   console.log("Enviando >>> ", solicitudReceta);
 
@@ -42,9 +51,7 @@ export const enviarReceta = async (
           error: "Debes incluir una imágen en tu solicitud.",
         };
       } else {
-        return {
-          error: "este modelo no está disponible en este momento.",
-        };
+        return fetchGenerarRecetaDeImagen(solicitudReceta)
       }
 
     default:
@@ -82,6 +89,32 @@ async function fetchGenerarRecetaNormal(
 async function fetchGenerarRecetaDeVideoYouTube(solicitudReceta: SolicitudReceta): Promise<RespuestaBackend> {
   try {
     const response = await fetch("http://127.0.0.1:5000/api/ia-video-yt", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(solicitudReceta),
+    });
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error("Error en fetch:", error);
+    throw error;
+  }
+}
+
+function verificarLongitudPrompt(prompt:string): boolean{
+  if(prompt.length <= 200){
+    return true
+  }
+    return false
+
+}
+
+async function fetchGenerarRecetaDeImagen(solicitudReceta: SolicitudReceta): Promise<RespuestaBackend> {
+  try {
+    const response = await fetch("http://127.0.0.1:5000/api/ia-imagenes", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

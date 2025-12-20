@@ -9,6 +9,7 @@ from app.youtube_search_api_service import obtener_video_youtube
 from app.models.VideoInfo import VideoInfo
 import uuid
 from app.procesar_receta_yt_service import generar_respuesta_yt_video_url
+from app.imagenes_service import generar_respuesta_ia_imagen
 
 app = Flask(__name__)
 
@@ -61,6 +62,36 @@ def procesar_solicitud_video_yt():
         response = make_response(jsonify({"error": str(e), "estado": "error"}))
         _verificar_token_cookies(response=response)
         return response
+    
+
+@app.route('/api/ia-imagenes', methods=['POST'])
+@rate_limiter.limit("15 per minute")
+def procesar_solicitud_imagenes():
+    try:
+        datos = request.get_json()
+        especificacionesObj = Especificaciones(**datos.get("especificaciones", {}))
+        solicitudRecetaObj = SolicitudReceta(
+            imagen=datos.get('imagen', ''),
+            tipoImagen=datos.get('tipoImagen',''),
+            especificaciones=especificacionesObj or Especificaciones(),
+        )
+        response = make_response(
+            _json_respuesta(
+                generar_respuesta_ia_imagen(
+                    imagen_base64=solicitudRecetaObj.imagen, 
+                    tipoImagen=solicitudRecetaObj.tipoImagen, 
+                    especificaciones=solicitudRecetaObj.especificaciones
+                )
+            ) 
+        )
+        _verificar_token_cookies(response=response)
+        return response
+    except Exception as e:
+        print(f"Error en controller: {str(e)}")
+        response = make_response(jsonify({"error": str(e), "estado": "error"}))
+        _verificar_token_cookies(response=response)
+        return response
+
 
 
 

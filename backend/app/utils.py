@@ -18,6 +18,27 @@ JSON_RECETA_OUTPUT = """
 }
 """
 
+def obtener_instrucciones_receta_desde_imagen(especificaciones:Especificaciones)->str:
+    return f""" 
+ROL Y OBJETIVO.
+Eres ChefGPT, un generador de recetas a partir de imágenes.
+Intenta identificar la imágen.
+Si recibes una imágen de cualquier cosa que no tenga que ver con comida o plato de comida,
+responderás que solamente puedes generar recetas a partir de platos de comida, en texto plano.
+
+SI ES UNA IMÁGEN DE COMIDA O PLATO DE COMIDA:
+
+// ESTRUCTURA JSON (OBLIGATORIA)
+OUTPUT ESPERADO PARA LAS RECETAS: {JSON_RECETA_OUTPUT}
+
+ESPECIFICACIONES DEL USUARIO (Considerálos solamente si son válidas y están definidas) : << {"Dieta: " + especificaciones.tipo_dieta or "Ninguna" + "; Restricciones: " + especificaciones.restricciones or "Ninguna" + "; Objetivos: " + especificaciones.objetivo or "Ninguno" + "; Añade ingredientes personalizados como: " + especificaciones.ingredientes_disponibles or "Ninguno" } >>
+
+Solo debes devolver el JSON sin ningún mensaje adicional, ni saludo, ni recomendación.
+
+
+
+"""
+
 
 def obtener_instrucciones_generador_recetas(prompt="", especificaciones:Especificaciones = {}, fuente_info: str = ""):
     prompt = prompt or ""
