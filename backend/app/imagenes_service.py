@@ -1,7 +1,4 @@
-import os
-import requests
-import json
-from app.models.SolicitudReceta import SolicitudReceta
+
 from app.models.Especificaciones import Especificaciones
 from app.models.Receta import Receta
 from app.utils import obtener_instrucciones_receta_desde_imagen, extraer_formato_respuesta
@@ -27,8 +24,6 @@ def generar_respuesta_ia_imagen(imagen_base64: str, tipoImagen:str, especificaci
     # Intentamos extraer JSON de receta
     return extraer_formato_respuesta(respuesta=respuesta)
 
-
-# # ---------------- FUNCIONES AUXILIARES ----------------
 
 def _obtener_playload(contents, instruccionesSistema):
     playload = {

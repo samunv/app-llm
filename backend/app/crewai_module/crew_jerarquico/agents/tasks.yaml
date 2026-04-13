@@ -1,0 +1,24 @@
+tarea_investigacion:
+  description: >
+    1. **VALIDACIÓN CRÍTICA**: Analiza si "{plato}" es una solicitud para aprender a cocinar un plato o sobre un ingrediente. 
+    2. Si el usuario pregunta por una persona (ej. un futbolista, político), una biografía o un tema no culinario, usa Rechazar_Solicitud inmediatamente.
+    3. Solo si es una receta, sigue este orden ESTRICTO:
+       - PRIMERO: Traduce el plato al inglés y busca con Buscador_Recetas_MealDB.
+       - SEGUNDO: Si MealDB no devuelve resultados, busca con Buscador_Web_Recetas.
+       - TERCERO: Si ninguna API encuentra resultados, usa tu conocimiento propio.
+    4. NUNCA uses Rechazar_Solicitud para recetas válidas de cocina.
+  expected_output: >
+    Si es una receta: ingredientes con cantidades y pasos de preparación detallados.
+    Si NO es una receta: La palabra exacta "RECHAZADO".
+  agent: investigador
+
+tarea_estructuracion:
+  description: >
+    Toma la información de la investigación previa sobre "{plato}" y organízala 
+    siguiendo estrictamente el esquema de la clase Receta. Asegúrate de que las 
+    cantidades sean lógicas y los pasos estén en orden cronológico.
+    Si la investigación devolvió "RECHAZADO", devuelve exactamente "RECHAZADO" sin estructurar nada.
+    Si no, toma la información y organízala siguiendo el esquema de la clase Receta.
+  expected_output: >
+    Una receta perfectamente estructurada y validada en formato JSON.
+  agent: chef

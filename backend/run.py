@@ -1,4 +1,4 @@
-from app.controller import app
+from app.controller.controller import app
 from flask_cors import CORS
 
 # Permitir peticiones solo desde tu frontend (localhost:3000)

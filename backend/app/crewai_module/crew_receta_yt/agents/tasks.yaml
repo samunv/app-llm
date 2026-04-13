@@ -1,0 +1,21 @@
+tarea_clasificacion:
+  description: >
+    Analiza el título "{titulo}" del video con id "{video_id}".
+    USA la tool Buscador_Memoria_Chef para obtener la transcripción.
+    Decide si es una receta válida e incluye la transcripción completa en tu respuesta.
+  expected_output: >
+    Un JSON con:
+    - es_receta: boolean
+    - motivo: string
+    - transcripcion: string (la obtenida de la tool)
+  agent: validador
+
+tarea_extraccion:
+  description: >
+    Usa la transcripción proporcionada por el validador en la tarea anterior.
+    Extrae el nombre del plato, ingredientes y pasos.
+  expected_output: >
+    La receta completa estructurada en formato JSON.
+  agent: escritor
+  context:
+    - tarea_clasificacion  # así el escritor recibe el output del validador

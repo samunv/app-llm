@@ -3,26 +3,6 @@ from app.models.Receta import Receta
 from app.models.VideoInfo import VideoInfo
 from app.config.chromadb_client import coleccion_transcripciones_de_yt
 
-def obtener_receta_semantica_de_transcripciones(video_info:VideoInfo, transcripcion:str = "")->str:
-    if not _verificar_transcripcion_registrada(video_info.video_id):
-        _insertar_transcripcion(video_info=video_info ,transcripcion=transcripcion)
-
-    # Obtener ingredientes y pasos
-    nombre_receta = video_info.titulo
-    fragmentos_ingredientes = _obtener_fragmentos_ingredientes(video_id=video_info.video_id)
-    fragmentos_pasos = _obtener_fragmentos_pasos(video_id=video_info.video_id)
-
-    total_docs = list(set(fragmentos_ingredientes + fragmentos_pasos))
-
-    contexto_unificado = "\n- ".join(total_docs)
-
-    RECETA_SEMANTICA = f"""
-    Nombre de la receta: {nombre_receta}
-    CONTEXTO RECUPERADO:
-    - {contexto_unificado}
-    """
-
-    return RECETA_SEMANTICA
 
 def _verificar_transcripcion_registrada(video_id:str)->bool:
     resultado = coleccion_transcripciones_de_yt.get(
@@ -32,31 +12,32 @@ def _verificar_transcripcion_registrada(video_id:str)->bool:
     return len(resultado['ids']) > 0
 
 
-def _insertar_transcripcion(video_info: VideoInfo, transcripcion: str):
-    # tamaño (aprox 200-250 tokens)
-    CHUNKS = 1000
+def registrar_transcripcion_si_no_existe(video_info: VideoInfo, transcripcion: str):
+    if not _verificar_transcripcion_registrada(video_info.video_id):
+        # tamaño (aprox 200-250 tokens)
+        CHUNKS = 1000
 
-    # Dividir el texto en fragmentos
-    fragmentos = []
-    for i in range(0, len(transcripcion), CHUNKS):
-        fragmentos.append(transcripcion[i : i + CHUNKS])
+        # Dividir el texto en fragmentos
+        fragmentos = []
+        for i in range(0, len(transcripcion), CHUNKS):
+            fragmentos.append(transcripcion[i : i + CHUNKS])
 
-    # Crear IDs únicos para cada fragmento con video_id + posicion
-    ids_fragmentos = [f"{video_info.video_id}_{i}" for i in range(len(fragmentos))]
+        # Crear IDs únicos para cada fragmento con video_id + posicion
+        ids_fragmentos = [f"{video_info.video_id}_{i}" for i in range(len(fragmentos))]
 
-    # Crear metadatos
-    metadatos = [{"video_id": video_info.video_id, "titulo": video_info.titulo} for _ in fragmentos]
+        # Crear metadatos
+        metadatos = [{"video_id": video_info.video_id, "titulo": video_info.titulo} for _ in fragmentos]
 
-    coleccion_transcripciones_de_yt.upsert(
-        documents=fragmentos,
-        ids=ids_fragmentos,
-        metadatas=metadatos
-    )
+        coleccion_transcripciones_de_yt.upsert(
+            documents=fragmentos,
+            ids=ids_fragmentos,
+            metadatas=metadatos
+        )
 
-    print(f"Se han insertado {len(fragmentos)} fragmentos para el video {video_info.video_id}")
+        print(f"Se han insertado {len(fragmentos)} fragmentos para el video {video_info.video_id}")
 
 
-def _obtener_fragmentos_ingredientes(video_id: str) -> list:
+def obtener_fragmentos_ingredientes(video_id: str) -> list:
     resultados = coleccion_transcripciones_de_yt.query(
         query_texts=[
     "¿Qué ingredientes, alimentos y cantidades se utilizan?",
@@ -74,7 +55,7 @@ def _obtener_fragmentos_ingredientes(video_id: str) -> list:
 
     return _obtener_fragmentos_cercanos(resultados)
 
-def _obtener_fragmentos_pasos(video_id:str)->list:
+def obtener_fragmentos_pasos(video_id:str)->list:
     resultados = coleccion_transcripciones_de_yt.query(
         query_texts = [
     "Instrucciones de cocina paso a paso",
@@ -110,15 +91,27 @@ def _obtener_fragmentos_cercanos(resultados: dict):
 
 def obtener_fragmentos_mediante_prompt_usuario(prompt_usuario:str)->list:
     resultados = coleccion_transcripciones_de_yt.query(
-        query_texts = [
-            prompt_usuario
-        ],
+        query_texts=[prompt_usuario],
         n_results=3,
+        # Filtra videos donde el título CONTENGA la palabra del prompt
+        where={"titulo": {"$contains": prompt_usuario}}, 
         include=["documents", "distances"]
     )
 
-    # Verificar si hay resultados
     if not resultados or not resultados['documents'][0]:
         return []
 
-    return _obtener_fragmentos_cercanos(resultados)
+    fragmentos_cercanos = []
+    for i in range(len(resultados['documents'])):
+        docs = resultados['documents'][i]
+        dists = resultados['distances'][i]
+
+        for doc, dist in zip(docs, dists):
+            #  umbral bajo para ser más precisos
+            if dist < 1.0: 
+                # Evitamos fragmentos con "queso queso queso" (bucle de transcripción)
+                if doc.lower().count("queso") > 10: 
+                    continue
+                fragmentos_cercanos.append(doc)
+
+    return list(set(fragmentos_cercanos))

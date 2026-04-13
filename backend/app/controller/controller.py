@@ -2,7 +2,6 @@ from flask import Flask, request, jsonify, make_response
 from app.api_model_service import generar_respuesta_ia
 from app.models.Especificaciones import Especificaciones
 from app.models.SolicitudReceta import SolicitudReceta
-from app.local_service import generar_respuesta_ia_local
 from app.rate_limiter import rate_limiter
 from app.models.Receta import Receta
 from app.youtube_search_api_service import obtener_video_youtube
@@ -53,7 +52,6 @@ def procesar_solicitud_video_yt():
             especificaciones=especificacionesObj or Especificaciones(),
             historial=datos.get('historial', []),
         )
-        print(f"Controller >> LLegada de datos: Especificaciones-> {especificacionesObj.tipo_dieta}, {especificacionesObj.ingredientes_disponibles}")
         response = make_response(_generar_respuesta_yt_video_url(solicitudReceta=solicitudRecetaObj)) 
         _verificar_token_cookies(response=response)
         return response
@@ -135,18 +133,18 @@ def _obtener_video(respuesta_ia: Receta | str) -> VideoInfo | None:
 def _json_respuesta(respuesta: Receta | str, video: VideoInfo = None):
 
     if isinstance(respuesta, Receta):
-        respuesta_dict = respuesta.model_dump() 
         tipo_respuesta = "receta"
+        respuesta_final = respuesta.model_dump()
     elif isinstance(respuesta, dict) and "error" in respuesta:
-        # Caso de error {"error": "..."}
-        respuesta = respuesta["error"]
         tipo_respuesta = "error"
+        respuesta_final = respuesta["error"] # extrae el string del error
     else:
         tipo_respuesta = "chat"
-        
+        respuesta_final = respuesta 
+
     return jsonify({
-            "respuesta": respuesta_dict if isinstance(respuesta, Receta) else respuesta,
-            "tipo": tipo_respuesta,
-            "estado": "exito",
-            "video": video.to_dict() if video else None
-        })
+        "respuesta": respuesta_final, 
+        "tipo": tipo_respuesta,
+        "estado": "exito",
+        "video": video.to_dict() if video else None
+    })

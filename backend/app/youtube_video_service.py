@@ -40,7 +40,6 @@ def obtener_video_youtube_mediante_videoID(video_id: str) -> VideoInfo | None:
 
 
 def _procesar_datos_video(data: dict, video_id: str) -> VideoInfo | None:
-    # Renombré la función para reflejar mejor su propósito
     if not data or not data.get('items'):
         print(f"Advertencia: Video ID '{video_id}' no encontrado o respuesta vacía.")
         return None

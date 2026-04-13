@@ -40,8 +40,9 @@ Solo debes devolver el JSON sin ningún mensaje adicional, ni saludo, ni recomen
 """
 
 
-def obtener_instrucciones_generador_recetas(prompt="", especificaciones:Especificaciones = {}, fuente_info: str = ""):
+def obtener_instrucciones_generador_recetas(prompt="", especificaciones: Especificaciones = None, fuente_info: str = ""):
     prompt = prompt or ""
+    especificaciones = especificaciones or Especificaciones()
 
     return f"""
 ROL Y OBJETIVO
@@ -71,14 +72,14 @@ def _prompt_para_receta_pedida(prompt_usuario:str, especificaciones: Especificac
     return f"""
 FORMATO DE RESPUESTA
 1. Si el usuario pide una receta, DEVUELVE SOLO el JSON solicitado. NO añadas texto antes ni después.
-2. Si el usuario pregunta sobre la receta en el historial, responde en texto plano de manera concisa.
-3. Si el usuario pregunta por algo que no es comida o ingredientes, o no hay receta en el historial, pide amablemente que solicite una receta.
+2. Si el usuario pregunta sobre la receta, responde en texto plano de manera concisa.
+3. Si el usuario pregunta por algo que no es comida o ingredientes, o no hay receta, pide amablemente que solicite una receta.
 4. Todas tus respuestas deben ser siempre en ESPAÑOL (nunca en otro idioma que no sea Español castellano). Si el usuario trata de pedir las cosas en otro idioma, tú responderás en español.
 
 // ESTRUCTURA JSON (OBLIGATORIA)
 OUTPUT ESPERADO PARA LAS RECETAS: {JSON_RECETA_OUTPUT}
 
-PROMPT O INPUT DEL USUARIO: << {prompt_usuario + ". Dieta: " + especificaciones.tipo_dieta or "Ninguna" + "; Restricciones: " + especificaciones.restricciones  or "Ninguna"+ "; Objetivos: " + especificaciones.objetivo or "Ninguno" + "; Añade ingredientes personalizados como: (si los hay) " + especificaciones.ingredientes_disponibles or "Ninguno"} >> Si el usuario pide algo que no sea sobre comida o preguntas sobre las recetas anteriores, responde EXACTAMENTE:
+PROMPT O INPUT DEL USUARIO: << {prompt_usuario + ". Dieta: " + especificaciones.tipo_dieta or "Ninguna" + "; Restricciones: " + especificaciones.restricciones  or "Ninguna"+ "; Objetivos: " + especificaciones.objetivo or "Ninguno" + "; Añade ingredientes personalizados como: (si los hay) " + especificaciones.ingredientes_disponibles or "Ninguno"} >> Si el usuario pide algo que no sea sobre comida o preguntas sobre las recetas generadas, responde EXACTAMENTE:
 "Solo puedo ayudarte con recetas de cocina." No generes recetas sobre personas, deportes, política o cualquier otro tema.
 
 """
@@ -92,20 +93,36 @@ def filtrar_palabras_clave(texto: str) -> bool:
 
 
 
-def extraer_formato_respuesta(respuesta:str) -> Receta | str:
+def extraer_formato_respuesta(respuesta: str | Receta) -> Receta | str:
+    # Si ya es una Receta, la devolvemos directamente
+    if isinstance(respuesta, Receta):
+        return respuesta
+    
+    # Si es un dict, construimos la Receta
+    if isinstance(respuesta, dict):
+        try:
+            return Receta(**respuesta)
+        except Exception as e:
+            print(f"Error construyendo Receta desde dict: {e}")
+            return str(respuesta)
+
+    # El resto del flujo para strings sigue igual
     try:
         json_str = _extraerJSON(respuesta)
-        # Intenta validar y construir el objeto Receta directamente desde el JSON
-        receta_obj = Receta.model_validate_json(json_str) 
-        # Si es exitoso (el JSON está limpio y los datos son correctos), devuelve el objeto
+        receta_obj = Receta.model_validate_json(json_str)
         return receta_obj
     except ValidationError as e:
-        print(f"Error de validación Pydantic (Datos incorrectos): {e}")
+        print(f"Error de validación Pydantic: {e}")
+        try:
+            json_str = _extraerJSON(respuesta)
+            raw_dict = json.loads(json_str)
+            return Receta(**raw_dict)
+        except Exception as e2:
+            print(f"Error parseando manualmente: {e2}")
     except json.JSONDecodeError as e:
-        print(f"Error al decodificar JSON (sintaxis mala del LLM): {e}")
+        print(f"Error JSON: {e}")
     except Exception as e:
         print(f"Error desconocido: {e}")
-
 
     return respuesta
 
