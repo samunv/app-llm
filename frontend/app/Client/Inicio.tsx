@@ -95,6 +95,8 @@ export default function Inicio() {
       );
     } else if (modeloSeleccionado.id === "nevera") {
       setMensajePlaceholder("Añade tus ingredientes en ⊕ y pulsa enviar");
+    } else if (modeloSeleccionado.id === "nevera") {
+      setMensajePlaceholder("Añade tus ingredientes en ⊕ y pulsa enviar");
     } else {
       setMensajePlaceholder("¿Qué vamos a preparar hoy?");
     }
@@ -673,6 +675,9 @@ export default function Inicio() {
             onClick={()=>{
               if(modeloSeleccionado.id === "imagenes"){
                 handleClickImagen()
+              }
+              if(modeloSeleccionado.id === "nevera"){
+                setMostrarFormEspecificaciones(true)
               }
               if(modeloSeleccionado.id === "nevera"){
                 setMostrarFormEspecificaciones(true)
