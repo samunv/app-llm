@@ -6,6 +6,6 @@ export interface Receta{
 }
 export interface Ingrediente{
     nombre:string,
-    cantidad:string,
+    cantidad:string | number,
     unidadMedida:string
 }

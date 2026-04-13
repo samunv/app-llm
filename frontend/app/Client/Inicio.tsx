@@ -421,10 +421,10 @@ export default function Inicio() {
                   </div>
                 )}
 
-                {/* RECETA (Diseño Original Restaurado) */}
+                {/* RECETA*/}
                 {msg.tipo === "receta" && (
                   <div className="w-full bg-white p-10 rounded-3xl shadow-xl border border-gray-300">
-                    {/* Contenido Receta (Estilo Original) */}
+                    {/* Contenido Receta*/}
                     {(() => {
                       const r = msg.contenido as Receta;
                       return (
@@ -491,7 +491,7 @@ export default function Inicio() {
                   </div>
                 )}
               </div>
-              {/* TODO: VIDEO (Si existe) */}
+              {/* VIDEO (Si existe) */}
 
               {msg.video ? (
                 <div className="w-full mt-5">
@@ -571,7 +571,7 @@ export default function Inicio() {
           <div className="relative" ref={dropdownRef}>
             <button
               onClick={() => setIsOpen(!isOpen)}
-              className="flex items-center gap-2.5 px-3 py-2 cursor-pointer text-white rounded-xl transition-all duration-300 shadow-md hover:shadow-lg border border-[#8D6E63]/10 min-w-[180px] group relative"
+              className="flex items-center gap-2.5 px-3 py-2 cursor-pointer text-white rounded-lg transition-all duration-300 shadow-md hover:shadow-lg border border-[#8D6E63]/10 min-w-[180px] group relative"
               style={{ backgroundColor: modeloSeleccionado.color }}
             >
               {modeloSeleccionado.recomendado && (
@@ -651,6 +651,7 @@ export default function Inicio() {
                 ? "¿Peparamos otra receta?"
                 : mensajePlaceholder
             }
+            readOnly={modeloSeleccionado.id === "imagenes"}
             className="flex-1 outline-none text-base bg-transparent px-2 text-gray-700 placeholder-gray-400"
             value={solicitudReceta?.prompt ?? ""}
             onChange={(e) => {
@@ -658,6 +659,11 @@ export default function Inicio() {
               // if (modeloSeleccionado.id === "yt-receta") {
               //   handleVerificarInputEnlaceYouTube(e.target.value);
               // }
+            }}
+            onClick={()=>{
+              if(modeloSeleccionado.id === "imagenes"){
+                handleClickImagen()
+              }
             }}
             onKeyDown={(e) => e.key === "Enter" && handleEnviar()}
           />

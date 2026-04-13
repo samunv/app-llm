@@ -7,7 +7,7 @@ import { BiSolidFridge } from "react-icons/bi";
 export const modelosLLM: Modelo[] = [
   {
     id: "llama-3.1-8b-instant",
-    nombre: "Llama Instant",
+    nombre: "Conversación Llama Instant",
     version: "Última Generación",
     descripcion: "Lo último de Llama, perfecto para recetas innovadoras",
     velocidad: "ultrarrápido",
@@ -17,7 +17,7 @@ export const modelosLLM: Modelo[] = [
   },
   {
     id: "llama-3.3-70b-versatile",
-    nombre: "Llama Versatile",
+    nombre: "Conversación Llama Versatile",
     version: "Estándar",
     descripcion: "Rápido y eficiente, ideal para recetas del día a día",
     velocidad: "equilibrado",
