@@ -8,13 +8,15 @@ class BaseCrew:
             model="groq/llama-3.3-70b-versatile",
             temperature=0.1,
             api_key=os.getenv("GROQ_API_KEY"),
-            tool_choice="auto"
+            tool_choice="auto",
+            max_tokens=800
         )
     
     @property
     def llm_rapido(self):
         return LLM(model="groq/llama-3.1-8b-instant", 
-                   temperature=0.1,
-                   api_key=os.getenv("GROQ_API_KEY"), 
-                   tool_choice="auto"
-                   )
+            temperature=0.1,
+            api_key=os.getenv("GROQ_API_KEY"), 
+            tool_choice="auto",
+            max_tokens=600
+        )

@@ -1,7 +1,7 @@
 from crewai import Agent, Crew, Process, Task
 from crewai.project import CrewBase, agent, crew, task
 from app.crewai_module.BaseCrew import BaseCrew
-from app.crewai_module.tools.ToolTavily import ToolTavilyBusqueda
+from app.crewai_module.tools.ToolMealDbApi import ToolMealDbApi
 from app.crewai_module.tools.ToolRechazar import ToolRechazar
 from app.models.Receta import Receta
 
@@ -15,9 +15,10 @@ class CrewJerarquico(BaseCrew):
     def investigador(self) -> Agent:
         return Agent(
         config=self.agents_config['investigador'],
-        tools=[ToolTavilyBusqueda(), ToolRechazar()],
+        tools=[ToolMealDbApi(), ToolRechazar()],
         llm=self.llm_rapido,
-        allow_delegation=False
+        allow_delegation=False,
+        max_iter=3
     )
 
     @agent
@@ -52,5 +53,16 @@ class CrewJerarquico(BaseCrew):
             process=Process.hierarchical,
             manager_llm=self.llm,
             verbose=True,
-            max_rpm=6 # Máximo 6 ejecuciones por minuto para controlar tokens
+            max_rpm=4, # Máximo 4 ejecuciones por minuto para controlar tokens
+            max_iter=3,
+            manager_agent=Agent(
+                role="Manager",
+                goal="Delega SIEMPRE las tareas a los agentes correctos. NUNCA ejecutes tareas tú mismo.",
+                backstory="Eres un manager que coordina. No investigas ni cocinas, solo delegas.",
+                llm=self.llm,
+                allow_delegation=True,
+                verbose=True,
+                max_iter=3,
+                max_rpm=2
+            )
         )

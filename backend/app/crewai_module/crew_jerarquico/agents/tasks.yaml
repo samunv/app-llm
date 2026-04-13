@@ -4,14 +4,14 @@ tarea_investigacion:
     2. Si el usuario pregunta por una persona (ej. un futbolista, político), una biografía o un tema no culinario, usa Rechazar_Solicitud inmediatamente.
     3. Solo si es una receta, sigue este orden ESTRICTO:
        - PRIMERO: Traduce el plato al inglés y busca con Buscador_Recetas_MealDB.
-       - SEGUNDO: Si MealDB no devuelve resultados, busca con Buscador_Web_Recetas.
-       - TERCERO: Si ninguna API encuentra resultados, usa tu conocimiento propio.
+       - SEGUNDO: Si MealDB no devuelve resultados, usa tu conocimiento propio.
     4. NUNCA uses Rechazar_Solicitud para recetas válidas de cocina.
   expected_output: >
     Si es una receta: ingredientes con cantidades y pasos de preparación detallados.
     Si NO es una receta: La palabra exacta "RECHAZADO".
   agent: investigador
 
+  
 tarea_estructuracion:
   description: >
     Toma la información de la investigación previa sobre "{plato}" y organízala 
