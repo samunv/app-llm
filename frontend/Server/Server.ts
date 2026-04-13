@@ -4,7 +4,6 @@ import { Receta } from "@/app/interfaces/Receta";
 import { SolicitudReceta } from "@/app/interfaces/SolicitudReceta";
 import { VideoInfo } from "@/app/interfaces/VideoInfo";
 
-// Definimos la nueva estructura de respuesta del Backend
 export interface RespuestaBackend {
   respuesta?: Receta | string | "error";
   video?: VideoInfo;
@@ -30,9 +29,9 @@ export const enviarReceta = async (
     }
   }
 
-  if (solicitudReceta.imagen && solicitudReceta.imagen.length > 5 * 1024 * 1024) { // Límite de 5MB aprox
+  if (solicitudReceta.imagen && solicitudReceta.imagen.length > 5 * 1024 * 1024) {
     return { error: "La imagen es demasiado pesada. No debe superar los 5MB." };
-}
+  }
 
   console.log("Enviando >>> ", solicitudReceta);
 
@@ -41,9 +40,7 @@ export const enviarReceta = async (
       return fetchGenerarRecetaDeVideoYouTube(solicitudReceta);
 
     case "nevera":
-      return {
-        error: "este modelo no está disponible en este momento.",
-      };
+      return fetchGenerarRecetaNevera(solicitudReceta);
 
     case "imagenes":
       if (!solicitudReceta.imagen || !solicitudReceta.tipoImagen) {
@@ -51,7 +48,7 @@ export const enviarReceta = async (
           error: "Debes incluir una imágen en tu solicitud.",
         };
       } else {
-        return fetchGenerarRecetaDeImagen(solicitudReceta)
+        return fetchGenerarRecetaDeImagen(solicitudReceta);
       }
 
     default:
@@ -72,14 +69,10 @@ async function fetchGenerarRecetaNormal(
   try {
     const response = await fetch("http://127.0.0.1:5000/api/ia", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(solicitudReceta),
     });
-
-    const data = await response.json();
-    return data;
+    return await response.json();
   } catch (error) {
     console.error("Error en fetch:", error);
     throw error;
@@ -90,14 +83,24 @@ async function fetchGenerarRecetaDeVideoYouTube(solicitudReceta: SolicitudReceta
   try {
     const response = await fetch("http://127.0.0.1:5000/api/ia-video-yt", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(solicitudReceta),
     });
+    return await response.json();
+  } catch (error) {
+    console.error("Error en fetch:", error);
+    throw error;
+  }
+}
 
-    const data = await response.json();
-    return data;
+async function fetchGenerarRecetaNevera(solicitudReceta: SolicitudReceta): Promise<RespuestaBackend> {
+  try {
+    const response = await fetch("http://127.0.0.1:5000/api/ia-nevera", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(solicitudReceta),
+    });
+    return await response.json();
   } catch (error) {
     console.error("Error en fetch:", error);
     throw error;
@@ -108,22 +111,17 @@ function verificarLongitudPrompt(prompt:string): boolean{
   if(prompt.length <= 200){
     return true
   }
-    return false
-
+  return false
 }
 
 async function fetchGenerarRecetaDeImagen(solicitudReceta: SolicitudReceta): Promise<RespuestaBackend> {
   try {
     const response = await fetch("http://127.0.0.1:5000/api/ia-imagenes", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(solicitudReceta),
     });
-
-    const data = await response.json();
-    return data;
+    return await response.json();
   } catch (error) {
     console.error("Error en fetch:", error);
     throw error;

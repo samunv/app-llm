@@ -33,16 +33,16 @@ export const modelosLLM: Modelo[] = [
     icono: <FaYoutube className="text-xl" />,
     color: "red",
   },
-  // {
-  //   id: "nevera",
-  //   nombre: "Nevera",
-  //   version: "Estándar",
-  //   descripcion: "Recetas creativas con los ingredientes de tu nevera.",
-  //   velocidad: "equilibrado",
-  //   icono: <BiSolidFridge className="text-xl"/>,
-  //   color: "#378FE9",
-  // },
-   {
+  {
+    id: "nevera",
+    nombre: "Mi Nevera",
+    version: "Estándar",
+    descripcion: "Recetas creativas con los ingredientes de tu nevera.",
+    velocidad: "equilibrado",
+    icono: <BiSolidFridge className="text-xl"/>,
+    color: "#378FE9",
+  },
+  {
     id: "imagenes",
     nombre: "Imágenes",
     version: "Estándar",
@@ -51,13 +51,4 @@ export const modelosLLM: Modelo[] = [
     icono: <FaImage className="text-xl"/>,
     color: "#23C95C",
   }
-  // {
-  //   id:"llama3:8b",
-  //   nombre: "Llama (local)",
-  //   version: "Local",
-  //   descripcion:"Más Lento. No lee imágenes. Requiere instalación de llama3.2:1b en el equipo.",
-  //   velocidad:"equilibrado",
-  //   icono: <SiOllama className="text-xl"/>,
-  //   color:"#318BFF"
-  // }
 ];
