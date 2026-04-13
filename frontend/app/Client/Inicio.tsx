@@ -93,6 +93,8 @@ export default function Inicio() {
       setMensajePlaceholder(
         "Ej: https://www.youtube.com/watch?v=..."
       );
+    } else if (modeloSeleccionado.id === "nevera") {
+      setMensajePlaceholder("Añade tus ingredientes en ⊕ y pulsa enviar");
     } else {
       setMensajePlaceholder("¿Qué vamos a preparar hoy?");
     }
@@ -117,7 +119,13 @@ export default function Inicio() {
     const textoInput = solicitudReceta?.prompt;
     const imagenInput = solicitudReceta?.imagen;
 
-    if (!textoInput && !imagenInput) return;
+    const esNevera = modeloSeleccionado.id === "nevera";
+    const tieneIngredientes = !!especificaciones?.ingredientes_disponibles?.trim();
+    if (!textoInput && !imagenInput && !esNevera) return;
+    if (esNevera && !tieneIngredientes) {
+      setMensajeError("Añade tus ingredientes en ⊕ antes de continuar.");
+      return;
+    }
 
     // 1. Mensaje Usuario
     const msgUsuario: MensajeChat = {
@@ -125,8 +133,10 @@ export default function Inicio() {
       rol: "usuario",
       tipo: "texto",
       contenido:
-        textoInput ||
-        (imagenInput ? "Haz una receta para el contenido de la imagen" : ""),
+        esNevera
+          ? `Receta con: ${especificaciones?.ingredientes_disponibles}`
+          : textoInput ||
+            (imagenInput ? "Haz una receta para el contenido de la imagen" : ""),
       imagen: imagenPreview ? imagenPreview : "",
     };
 
@@ -651,7 +661,7 @@ export default function Inicio() {
                 ? "¿Peparamos otra receta?"
                 : mensajePlaceholder
             }
-            readOnly={modeloSeleccionado.id === "imagenes"}
+            readOnly={modeloSeleccionado.id === "imagenes" || modeloSeleccionado.id === "nevera"}
             className="flex-1 outline-none text-base bg-transparent px-2 text-gray-700 placeholder-gray-400"
             value={solicitudReceta?.prompt ?? ""}
             onChange={(e) => {
@@ -663,6 +673,9 @@ export default function Inicio() {
             onClick={()=>{
               if(modeloSeleccionado.id === "imagenes"){
                 handleClickImagen()
+              }
+              if(modeloSeleccionado.id === "nevera"){
+                setMostrarFormEspecificaciones(true)
               }
             }}
             onKeyDown={(e) => e.key === "Enter" && handleEnviar()}
@@ -731,7 +744,10 @@ export default function Inicio() {
               handleEnviar();
             }}
             disabled={
-              cargando || (!solicitudReceta?.prompt && !solicitudReceta?.imagen)
+              cargando ||
+              (modeloSeleccionado.id === "nevera"
+                ? !especificaciones?.ingredientes_disponibles?.trim()
+                : !solicitudReceta?.prompt && !solicitudReceta?.imagen)
             }
             className={`bg-orange-500 hover:bg-orange-600 text-white p-3 rounded-xl transition-all shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center cursor-pointer`}
           >
