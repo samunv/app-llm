@@ -9,6 +9,7 @@ from app.models.VideoInfo import VideoInfo
 import uuid
 from app.procesar_receta_yt_service import generar_respuesta_yt_video_url
 from app.imagenes_service import generar_respuesta_ia_imagen
+from app.crewai_module.obtener_receta_por_ingredientes_service import obtener_receta_por_ingredientes
 
 app = Flask(__name__)
 
@@ -19,7 +20,6 @@ rate_limiter.init_app(app)
 def procesar_solicitud():
     try:
         datos = request.get_json()
-        #modeloSeleccionado = datos.get('modeloIASeleccionado', '')
         especificacionesObj = Especificaciones(**datos.get("especificaciones", {}))
         solicitudRecetaObj = SolicitudReceta(
             prompt=datos.get('prompt', ''),
@@ -29,7 +29,7 @@ def procesar_solicitud():
             especificaciones=especificacionesObj or Especificaciones(),
             historial=datos.get('historial', []),
         )
-        response = make_response(_generar_y_obtener_respuesta(solicitudRecetaObj=solicitudRecetaObj)) 
+        response = make_response(_generar_y_obtener_respuesta(solicitudRecetaObj=solicitudRecetaObj))
         _verificar_token_cookies(response=response)
         return response
     except Exception as e:
@@ -52,7 +52,7 @@ def procesar_solicitud_video_yt():
             especificaciones=especificacionesObj or Especificaciones(),
             historial=datos.get('historial', []),
         )
-        response = make_response(_generar_respuesta_yt_video_url(solicitudReceta=solicitudRecetaObj)) 
+        response = make_response(_generar_respuesta_yt_video_url(solicitudReceta=solicitudRecetaObj))
         _verificar_token_cookies(response=response)
         return response
     except Exception as e:
@@ -60,7 +60,7 @@ def procesar_solicitud_video_yt():
         response = make_response(jsonify({"error": str(e), "estado": "error"}))
         _verificar_token_cookies(response=response)
         return response
-    
+
 
 @app.route('/api/ia-imagenes', methods=['POST'])
 @rate_limiter.limit("15 per minute")
@@ -76,11 +76,11 @@ def procesar_solicitud_imagenes():
         response = make_response(
             _json_respuesta(
                 generar_respuesta_ia_imagen(
-                    imagen_base64=solicitudRecetaObj.imagen, 
-                    tipoImagen=solicitudRecetaObj.tipoImagen, 
+                    imagen_base64=solicitudRecetaObj.imagen,
+                    tipoImagen=solicitudRecetaObj.tipoImagen,
                     especificaciones=solicitudRecetaObj.especificaciones
                 )
-            ) 
+            )
         )
         _verificar_token_cookies(response=response)
         return response
@@ -91,6 +91,34 @@ def procesar_solicitud_imagenes():
         return response
 
 
+@app.route('/api/ia-nevera', methods=['POST'])
+@rate_limiter.limit("15 per minute")
+def procesar_solicitud_nevera():
+    try:
+        datos = request.get_json()
+        especificacionesObj = Especificaciones(**datos.get("especificaciones", {}))
+        ingredientes = especificacionesObj.ingredientes_disponibles
+
+        if not ingredientes or not ingredientes.strip():
+            response = make_response(jsonify({"error": "Debes indicar ingredientes disponibles.", "estado": "error"}))
+            _verificar_token_cookies(response=response)
+            return response
+
+        receta = obtener_receta_por_ingredientes(ingredientes_disponibles=ingredientes)
+
+        if receta is None:
+            response = make_response(jsonify({"error": "No se pudo generar una receta con esos ingredientes.", "estado": "error"}))
+            _verificar_token_cookies(response=response)
+            return response
+
+        response = make_response(_json_respuesta(respuesta=receta, video=None))
+        _verificar_token_cookies(response=response)
+        return response
+    except Exception as e:
+        print(f"Error en procesar_solicitud_nevera: {str(e)}")
+        response = make_response(jsonify({"error": str(e), "estado": "error"}))
+        _verificar_token_cookies(response=response)
+        return response
 
 
 def _verificar_token_cookies(response):
@@ -98,13 +126,12 @@ def _verificar_token_cookies(response):
     if not token:
         token = str(uuid.uuid4())
     response.set_cookie(
-        "client_token", 
+        "client_token",
         token,
         httponly=True,
         samesite="Lax",
         path="/"
     )
-
 
 
 def _generar_y_obtener_respuesta(solicitudRecetaObj: SolicitudReceta):
@@ -115,7 +142,7 @@ def _generar_y_obtener_respuesta(solicitudRecetaObj: SolicitudReceta):
 def _generar_respuesta_ia(solicitudRecetaObj: SolicitudReceta) -> str:
     return generar_respuesta_ia(datos_solicitud=solicitudRecetaObj)
 
-def _generar_respuesta_yt_video_url(solicitudReceta: SolicitudReceta)-> str|None:
+def _generar_respuesta_yt_video_url(solicitudReceta: SolicitudReceta) -> str | None:
     respuesta = ""
     if solicitudReceta.prompt.lower().startswith("https://www.youtube.com/watch?v="):
         respuesta = generar_respuesta_yt_video_url(datos_solicitud=solicitudReceta)
@@ -131,19 +158,18 @@ def _obtener_video(respuesta_ia: Receta | str) -> VideoInfo | None:
 
 
 def _json_respuesta(respuesta: Receta | str, video: VideoInfo = None):
-
     if isinstance(respuesta, Receta):
         tipo_respuesta = "receta"
         respuesta_final = respuesta.model_dump()
     elif isinstance(respuesta, dict) and "error" in respuesta:
         tipo_respuesta = "error"
-        respuesta_final = respuesta["error"] # extrae el string del error
+        respuesta_final = respuesta["error"]
     else:
         tipo_respuesta = "chat"
-        respuesta_final = respuesta 
+        respuesta_final = respuesta
 
     return jsonify({
-        "respuesta": respuesta_final, 
+        "respuesta": respuesta_final,
         "tipo": tipo_respuesta,
         "estado": "exito",
         "video": video.to_dict() if video else None

@@ -1,0 +1,25 @@
+tarea_analisis_despensa:
+  description: >
+    Analiza los ingredientes disponibles: "{ingredientes_disponibles}".
+    1. USA la tool Buscador_Recetas_Por_Ingredientes con esos ingredientes.
+    2. Si la tool devuelve recetas guardadas, priorízalas como base.
+    3. Si no hay resultados, usa tu conocimiento propio.
+    4. Propón el nombre del plato más viable y justifica brevemente por qué
+       encaja con los ingredientes disponibles.
+  expected_output: >
+    El nombre del plato recomendado, los ingredientes que se usarán de los
+    disponibles y una breve justificación de la elección.
+  agent: analista_despensa
+
+tarea_elaboracion_receta:
+  description: >
+    Con la propuesta del analista, elabora la receta completa de "{ingredientes_disponibles}".
+    Estructura la receta con nombre del plato, lista de ingredientes con cantidades
+    y pasos de preparación ordenados y claros.
+    Si algún ingrediente habitual falta, indícalo como opcional o da un sustituto.
+  expected_output: >
+    La receta completa y estructurada en formato JSON con nombrePlato,
+    ingredientes (nombre, cantidad, unidadMedida) y pasos.
+  agent: chef_creativo
+  context:
+    - tarea_analisis_despensa
